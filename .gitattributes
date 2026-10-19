@@ -1,0 +1,2 @@
+* text=auto eol=lf
+docs/prompts/001-master-prompt.txt -text
