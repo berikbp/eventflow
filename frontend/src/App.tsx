@@ -1,16 +1,6 @@
 ﻿import { useQuery } from '@tanstack/react-query'
 import { Link, Route, Routes } from 'react-router-dom'
-
-async function checkHealth(): Promise<void> {
-  const response = await fetch('/api/health/ready', { signal: AbortSignal.timeout(8000) })
-  if (!response.ok) throw new Error('API или база данных недоступны')
-  const result: unknown = await response.json()
-  if (
-    typeof result !== 'object' || result === null ||
-    !('status' in result) || result.status !== 'ok' ||
-    !('database' in result) || result.database !== 'ok'
-  ) throw new Error('Неожиданный ответ API')
-}
+import { checkHealth } from './api/health'
 
 function Foundation() {
   const health = useQuery({ queryKey: ['readiness'], queryFn: checkHealth, retry: 1, refetchInterval: 15000 })

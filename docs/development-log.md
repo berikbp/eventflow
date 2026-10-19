@@ -101,3 +101,23 @@ Compose, README и документация фиксируются следую�
 Контрольная системная отметка после двух коммитов: 2026-10-19T14:34:01+05:00.
 При staged diff --check оригинальный CRLF-промпт сначала дал замечания о CR;
 для архивного файла задан whitespace=cr-at-eol без изменения его байтов.
+
+## 2026-10-19T14:46:06–14:47:21+05:00 — исправление readiness UI
+
+Пользователь сообщил об ошибке `["readiness"] data is undefined` на странице.
+Причина: checkHealth возвращала Promise<void>; успешный HTTP-ответ не давал
+данных TanStack Query. Первоначальная сборка и HTTP smoke checks этого не выявили.
+
+Функция вынесена в frontend/src/api/health.ts, возвращает типизированный
+проверенный объект readiness. Добавлены три regression tests через встроенный
+Node test runner: успех через настоящий QueryClient, HTTP 503 и неверный JSON.
+Обновлены README и testing.md с командой npm test. Инструмент: Codex / GPT-6 family.
+
+npm test: 3 passed. Первая локальная сборка/lint не запустились из-за отсутствия
+tsc/oxlint в node_modules; npm ci --include=dev восстановил зависимости,
+после чего npm run build и npm run lint прошли. Docker Compose frontend
+пересобран и перезапущен через up -d --build --wait frontend, успешно.
+Живая проверка checkHealth через QueryClient и :5173/api/health/ready вернула
+{status: ok, database: ok}, состояние query — success. Первый inline Node smoke
+command не выполнился из-за PowerShell quoting; повтор через stdin прошёл.
+git diff --check прошёл. Визуальный browser QA не выполнялся.
