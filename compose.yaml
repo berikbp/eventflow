@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-eventflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventflow_local}
+      POSTGRES_DB: ${POSTGRES_DB:-eventflow}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-eventflow}:${POSTGRES_PASSWORD:-eventflow_local}@db:5432/${POSTGRES_DB:-eventflow}
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready', timeout=6)"]
+      interval: 10s
+      timeout: 7s
+      retries: 5
+  frontend:
+    build: ./frontend
+    environment:
+      API_PROXY_TARGET: http://backend:8000
+    ports:
+      - "127.0.0.1:5173:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+  mailpit:
+    image: axllent/mailpit:v1.27.10
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+volumes:
+  postgres_data:

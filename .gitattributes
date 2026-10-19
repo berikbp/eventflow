@@ -1,2 +1,2 @@
 * text=auto eol=lf
-docs/prompts/001-master-prompt.txt -text
+docs/prompts/001-master-prompt.txt -text whitespace=cr-at-eol
