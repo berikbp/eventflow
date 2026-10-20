@@ -121,3 +121,87 @@ tsc/oxlint в node_modules; npm ci --include=dev восстановил зави
 {status: ok, database: ok}, состояние query — success. Первый inline Node smoke
 command не выполнился из-за PowerShell quoting; повтор через stdin прошёл.
 git diff --check прошёл. Визуальный browser QA не выполнялся.
+
+## 2026-10-20 — Phase 2: Database & Event Management
+
+Часовой пояс Asia/Qyzylorda (UTC+05:00). Системные отметки ниже получены Get-Date.
+Инструмент: Codex / GPT-6 family, точный вариант не доступен. Субагентов не было.
+Промпт пользователя сохранён в prompts/002-phase-2.txt.
+
+### 15:35:01 +05:00 — осмотр и план
+
+Рабочее дерево чистое, четыре контейнера Phase 1 работали. AGENTS.md в проекте
+не найден. Изучены текущие конфигурация, API, frontend, README и архитектура.
+План: Event, миграция Alembic, публичный read API, защищённый CRUD организатора,
+список/детали и формы UI, PostgreSQL integration tests. Регистрация и уведомления
+исключены из объёма текущего этапа.
+
+### Реализация до контрольной отметки 15:56:11 +05:00
+
+Добавлены UUID Event, title/description, starts_at timestamptz, capacity,
+schedule_version, created_at/updated_at. CHECK ограничения и индекс starts_at/id.
+Alembic async environment и 0001_events; контейнер мигрирует БД перед Uvicorn.
+Сервисы отделены от endpoints, AsyncSession на запрос, транзакции записи и
+row lock для PATCH/DELETE. Реализованы пагинация, 404, строгие схемы/422,
+UTC-нормализация и инкремент версии при переносе.
+
+Выбран общий bearer token организатора вместо аккаунтов: защищает все записи,
+не требуется для чтения; пустой токен отключает запись, минимум 32 символа.
+Новый setup_local добавляет случайный секрет в игнорируемый .env без вывода
+секрета в терминал, сохраняет существующие настройки и непустой токен.
+
+Первый Windows uv run обнаружил Linux .venv и попытался пересоздать её, но
+остановился на lib64 reparse point с Access denied. Дальнейшие команды выполнены
+с UV_PROJECT_ENVIRONMENT=.venv-windows, оно исключено из Git/Docker context.
+При возврате к WSL Linux-окружение можно восстановить uv sync. Зависимости и
+lockfiles не менялись. Первые замечания Ruff исправлены форматированием/import
+sorting; Alembic path_separator=os убрал deprecation warning.
+
+Первые PostgreSQL API tests: 27 passed. Каждому тесту выделяется отдельная схема
+test_events_<uuid>; миграции применяются туда программно. Teardown удаляет только
+свою схему. Проверяется CRUD, доступ, пагинация, ошибки, DB CHECK, schedule_version,
+upgrade/downgrade/upgrade и drift check. Дополнительно протестированы безопасное
+отключение записи, короткий токен, идемпотентный setup и demo seed.
+
+Frontend: публичный список/детали, отдельный маршрут /system для readiness,
+доступ организатора, формы создания/PATCH и подтверждение удаления. Токен
+находится в памяти вкладки. Добавлены состояния загрузки/ошибки/пустого списка,
+успешные сообщения, invalidation Query cache и локальная дата ↔ UTC.
+Сборка прошла; замечание lint о Date при рендере карточки устранено.
+
+### 15:58:02–15:58:41 +05:00 — запуск и persistence
+
+setup_local создал ORGANIZER_TOKEN только в .env. Alembic upgrade head применён
+к локальной БД, current = 0001_events. Alembic check: no new upgrade operations.
+Compose build/up --wait успешно обновил приложения. Seed создан и запущен дважды:
+две demo-записи со стабильными UUID, без перезаписи существующих данных.
+
+Живой smoke через :5173/api: неавторизованный доступ = 401, правильный token
+проверен, временное событие создано (201), прочитано и изменено (200), удалено
+(204), последующий GET = 404. Временная запись убрана в finally.
+После docker compose restart db backend и up --wait demo Event с UUID
+00000000-0000-4000-8000-000000000001 по-прежнему читается, capacity=30.
+
+### 16:00:44–16:01:15 +05:00 — финальная проверка
+
+- uv run pytest -q с TEST_DATABASE_URL: **31 passed in 3.66s**, без warnings.
+- uv run ruff check .: passed; format --check: 28 файлов отформатированы.
+- uv lock --check: passed, 39 packages.
+- uv run alembic check: no new upgrade operations detected.
+- npm test: **7 passed**; npm run build и npm run lint прошли без замечаний.
+- docker compose config --quiet и build/up --wait прошли.
+- git check-ignore подтвердил исключение .env и .venv-windows.
+- Живой TypeScript API + QueryClient загрузил список и детали через frontend
+  proxy, оба запроса success. Контейнерный alembic check также прошёл.
+- Повторный контейнерный seed не изменил существующие demo-записи.
+
+Browser inventory = apps: [], browsers: []; визуальный QA и ручной сценарий
+кликами не выполнялись. Это остаётся ограничением проверки. Обновлены README,
+архитектура, решения, требования и testing.md. После проверок изменения
+фиксируются отдельными коммитами backend, frontend и документации с реальными
+датами и ранее согласованной Git identity.
+
+Следующий этап: Registration и FIFO waiting list, ограничения email, транзакции
+последнего места, отмена/продвижение и concurrency tests PostgreSQL.
+До появления регистраций следует дополнить правила DELETE и уменьшения capacity.
+SSE, outbox, письма и последствия переноса для уведомлений ещё не реализованы.

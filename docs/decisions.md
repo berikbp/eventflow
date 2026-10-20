@@ -26,6 +26,35 @@
 12. Миграции вместе с моделями в Phase 2: в Foundation таблиц нет, пустая
     миграция не нужна. Alembic уже в зависимостях.
 
+## Phase 2 — 2026-10-20, Asia/Qyzylorda
+
+13. Вместо локального аккаунта выбран один серверный bearer token организатора:
+    минимальный доступ для задания без таблиц пользователей/ролей. Случайный
+    секрет генерируется в игнорируемый .env, проверяется constant-time сравнением.
+    Пустой секрет отключает запись, короткий отклоняется конфигурацией.
+    Токен в UI хранится в памяти, без localStorage/sessionStorage. Для удалённого
+    размещения потребуется HTTPS; сейчас опубликованы только loopback-порты.
+14. Event имеет UTC timestamp, UUID и schedule_version. Модель/миграция задают
+    CHECK для положительной вместимости и непустого названия. Schema валидирует
+    timezone и будущую дату; PATCH отличает пропуск поля от null.
+15. PATCH/DELETE используют row lock, чтобы последовательно менять Event.
+    Для одновременного редактирования одного поля действует last-write-wins;
+    это не optimistic version control. Версия расписания нужна будущим заданиям,
+    а не заменяет блокировки регистрации в Phase 3.
+16. Миграции проверяются upgrade/downgrade/upgrade в UUID-схемах PostgreSQL.
+    Fixture удаляет только созданную ею схему и не очищает таблицы приложения.
+    Alembic check проверяет отсутствие расхождений metadata и миграции.
+17. Для совместной работы Windows/WSL используется отдельная .venv-windows;
+    исходная .venv имела Linux-конфигурацию и вызвала ошибку при Windows uv sync.
+    Для восстановления Linux-окружения используйте uv sync в WSL.
+    Новых зависимостей не добавлено.
+18. Demo seed имеет стабильные UUID и INSERT ON CONFLICT DO NOTHING: повторный
+    запуск не перезаписывает изменения организатора.
+
+Дополнительные официальные источники Phase 2:
+- https://alembic.sqlalchemy.org/en/latest/cookbook.html#using-asyncio-with-alembic
+- https://docs.pydantic.dev/latest/api/standard_library_types/#datetimes
+
 Официальные источники, просмотренные в этой сессии:
 - https://docs.astral.sh/uv/guides/integration/docker/
 - https://docs.astral.sh/uv/concepts/projects/sync/
