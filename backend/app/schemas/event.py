@@ -65,6 +65,7 @@ class EventRead(BaseModel):
     description: str
     starts_at: AwareDatetime
     capacity: int
+    confirmed_count: int
     schedule_version: int
     created_at: AwareDatetime
     updated_at: AwareDatetime

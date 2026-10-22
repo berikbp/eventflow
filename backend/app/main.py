@@ -8,7 +8,9 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from app.api.events import router as events_router
 from app.api.health import router
 from app.api.organizer import router as organizer_router
+from app.api.registrations import router as registrations_router
 from app.core.config import Settings
+from app.services.errors import Conflict, RegistrationNotFound
 from app.services.events import EventNotFound
 
 
@@ -32,6 +34,20 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(router)
     app.include_router(events_router)
     app.include_router(organizer_router)
+    app.include_router(registrations_router)
+
+    @app.exception_handler(Conflict)
+    async def conflict(request: Request, exc: Conflict) -> JSONResponse:
+        return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+    @app.exception_handler(RegistrationNotFound)
+    async def registration_not_found(
+        request: Request, exc: RegistrationNotFound
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=404,
+            content={"detail": "Регистрация не найдена или ссылка недействительна"},
+        )
 
     @app.exception_handler(EventNotFound)
     async def event_not_found(request: Request, exc: EventNotFound) -> JSONResponse:

@@ -4,7 +4,9 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.event import Event
+from app.models.registration import Registration
 from app.schemas.event import EventCreate, EventUpdate
+from app.services.errors import Conflict
 
 
 class EventNotFound(Exception):
@@ -45,11 +47,18 @@ async def update_event(
     async with session.begin():
         event = await get_event(session, event_id, lock=True)
         changes = data.model_dump(exclude_unset=True)
+        if changes.get("capacity", event.capacity) < event.confirmed_count:
+            raise Conflict(
+                "Вместимость не может быть меньше числа подтверждённых участников"
+            )
         if "starts_at" in changes and changes["starts_at"] != event.starts_at:
             event.schedule_version += 1
         for field, value in changes.items():
             setattr(event, field, value)
         await session.flush()
+        from app.services.registrations import promote_waiters
+
+        await promote_waiters(session, event)
         await session.refresh(event)
     return event
 
@@ -57,4 +66,8 @@ async def update_event(
 async def delete_event(session: AsyncSession, event_id: UUID) -> None:
     async with session.begin():
         event = await get_event(session, event_id, lock=True)
+        if await session.scalar(
+            select(Registration.id).where(Registration.event_id == event_id).limit(1)
+        ):
+            raise Conflict("Нельзя удалить мероприятие с историей регистраций")
         await session.delete(event)
