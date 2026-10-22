@@ -25,3 +25,7 @@
    Сохранено также в [002-phase-2.txt](prompts/002-phase-2.txt).
    Выполняется Phase 2 из исходного MASTER PROMPT: модели, Alembic, CRUD,
    API schemas/tests и страницы мероприятий. Уточняющих промптов не было.
+
+5. 2026-10-22: пользователь дословно написал: «ok let's continue our next phase».
+   [Исходный текст](prompts/003-phase-3.txt). Следующий этап по MASTER PROMPT —
+   Phase 3: регистрация, waiting list, отмена, FIFO-продвижение и concurrency tests.

@@ -55,6 +55,35 @@
 - https://alembic.sqlalchemy.org/en/latest/cookbook.html#using-asyncio-with-alembic
 - https://docs.pydantic.dev/latest/api/standard_library_types/#datetimes
 
+## Phase 3 — 2026-10-22, Asia/Qyzylorda
+
+19. Registration получает статус confirmed/waiting/cancelled вместо отдельной
+    WaitingList. Монотонный номер на Event задаёт FIFO без неоднозначных timestamp.
+    Rejoin сохраняет строку, но выдаёт новый номер в конце очереди.
+20. Один Event row lock сериализует все API изменения мест и очереди. DB-trigger
+    поддерживает confirmed_count, CHECK запрещает overselling. Одного CHECK с
+    SELECT count(*) по другой таблице PostgreSQL не поддерживает; trigger и
+    счётчик дают транзакционную проверку при прямом DML регистраций.
+21. Клиент создаёт 256-bit ключ до POST: тот же ключ обеспечивает безопасный
+    retry, не раскрывая существующий доступ по одному email. Сервер хранит hash.
+    Потеря доступа пока не восстанавливается; email verification появится только
+    при отдельной реализации и сейчас не заявляется.
+22. Новая регистрация/отмена/rejoin после старта запрещены. Повтор отмены уже
+    отменённой записи не имеет эффекта. Увеличение capacity продвигает FIFO;
+    удаление события с историей и снижение capacity ниже занятых мест дают 409.
+23. Статус с queue_position формируется одной SQL snapshot-операцией, чтобы
+    чтение не смешивало состояние до и после продвижения. Список организатора
+    использует тот же запрос, без N+1 подсчётов по сети.
+24. Добавлен email-validator (через uv, 41 package в lock) для EmailStr;
+    нормализация case-insensitive в пределах event, с DB UNIQUE и CHECK.
+25. Phase 3 использует polling 10 секунд. Это промежуточный способ отображения
+    изменений, не объявляется выполнением запланированного SSE в Phase 5.
+
+Официальные источники Phase 3:
+- https://www.postgresql.org/docs/17/ddl-constraints.html
+- https://www.postgresql.org/docs/16/trigger-definition.html
+- https://docs.pydantic.dev/latest/api/networks/#emailstr
+
 Официальные источники, просмотренные в этой сессии:
 - https://docs.astral.sh/uv/guides/integration/docker/
 - https://docs.astral.sh/uv/concepts/projects/sync/

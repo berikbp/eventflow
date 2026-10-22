@@ -205,3 +205,89 @@ Browser inventory = apps: [], browsers: []; визуальный QA и ручн�
 последнего места, отмена/продвижение и concurrency tests PostgreSQL.
 До появления регистраций следует дополнить правила DELETE и уменьшения capacity.
 SSE, outbox, письма и последствия переноса для уведомлений ещё не реализованы.
+
+## 2026-10-22 — Phase 3: Registration & Waiting List
+
+Timezone Asia/Qyzylorda (UTC+05:00). Временные отметки получены Get-Date во время
+работы. Инструмент Codex / GPT-6 family; точный вариант модели не предоставлен.
+Субагентов не было. Реальный запрос: prompts/003-phase-3.txt.
+
+### 16:23:24 +05:00 — анализ
+
+Рабочее дерево чистое, Phase 2 контейнеры работают. AGENTS.md в проекте не найден.
+Прочитаны Event/model/schema/service, app factory, PostgreSQL fixtures и UI.
+План: Registration, FIFO, idempotency, личный ключ, cancellation/promotion,
+защита capacity/delete и PostgreSQL concurrency tests. Tickets и outbox оставлены
+для следующих этапов. Просмотрены официальные PostgreSQL/Pydantic docs.
+
+### 16:27:12–16:27:43 +05:00 — модель и базовые concurrency tests
+
+Добавлена миграция 0002_registrations: Registration с CHECK/FK/UNIQUE, индекс FIFO;
+Event получил confirmed_count и next_registration_order. DB-trigger меняет
+counter в той же транзакции, CHECK отклоняет переполнение. Все API операции
+мест используют Event FOR UPDATE. Отмена вызывает FIFO-продвижение, rejoin
+возвращает запись в конец. Редактирование capacity соблюдает count и продвигает
+очередь; удаление события с любой историей запрещено.
+
+Email валидируется EmailStr, strip/lower и DB UNIQUE. Через uv добавлен
+email-validator с dnspython; lock содержит 41 package. Клиентский 256-bit ключ
+служит credential и idempotency key; сервер хранит только SHA-256. Другой ключ
+на тот же email даёт 409 без получения чужого ID или данных управления.
+Участник читает/отменяет по Bearer; список с email доступен только организатору.
+
+Существующие 31 тест прошли после добавления модели. Fixtures перенесены в
+conftest.py для повторного использования. Следующий прогон: 43 passed in 10.51s,
+включая последнее место и 20/5, retries, отмены, FIFO, raw DB guard/rollback.
+Замечания Ruff по длинным строкам исправлены форматированием и разбиением SQL.
+
+### 16:29:07–16:31:25 +05:00 — UI и расширенная регрессия
+
+Добавлены форма регистрации на странице события, личный статус/cancel/rejoin,
+ссылка с fragment-секретом, private API clients и список участников организатора.
+UI опрашивает данные каждые 10 секунд. Pending attempt в sessionStorage переживает
+reload, очищается после успешного ответа; при отключённом storage retry остаётся
+в памяти. Добавлен no-referrer, private API responses no-store.
+
+В ходе review статус и queue_position переведены на один SQL snapshot: иначе
+чтение могло смешать статус до promotion и позицию после него. Список использует
+тот же запрос без сетевого N+1. После изменения 43 backend tests снова прошли.
+
+Расширены тесты гонок capacity/cancel vs registration и прямых конкурентных
+INSERT, DB email uniqueness и reuse ключа на другой email.
+Итоговый pytest: **49 passed in 13.75s**. Frontend: **12 passed**, TypeScript/Vite
+build и lint прошли. Новые frontend tests проверяют secret headers, link fragment,
+retry/pending recovery и protected list. Визуальный browser QA не выполнен:
+inventory вернул apps=[] и browsers=[].
+
+Alembic check перед применением новой миграции к public БД сообщил Target database
+is not up to date. Это было состояние Phase 2 public schema, не расхождение
+применённой модели: integration tests уже проверяли head в изолированных схемах.
+После старта обновлённого контейнера миграция применена, current показывает
+0002_registrations (head), check: No new upgrade operations detected.
+
+### 16:34:04–16:35:41 +05:00 — Compose, живой smoke и persistence
+
+docker compose up --build -d --wait прошёл. Сборка загрузила обновлённые Python/Node
+base images и зависимости; загрузка uv runtime packages заняла около 2m20s.
+Новый backend стартовал с миграцией; все сервисы доступны.
+
+Живой smoke через frontend proxy создал отдельное событие на 1 место и двух
+участников, проверил confirmed/waiting, отмену → promotion, rejoin, private read,
+organizer list, no-store и запрет удаления истории. Все проверки прошли.
+Временные ключи не выводились, хранились только в игнорируемом локальном файле.
+
+После restart PostgreSQL/backend личный доступ и состояния (первый waiting,
+второй confirmed) сохранились. Затем в транзакции с Event lock удалены только
+созданные smoke-регистрации и их событие; проверено обнуление trigger counter.
+Файл с временными ключами удалён. Demo/user events не затронуты.
+
+Финальные проверки: Alembic check passed; Ruff check passed; format --check —
+36 files formatted; uv lock --check passed, 41 packages. README, architecture,
+decisions, checklist, testing и prompts обновлены с фактическим состоянием.
+После проверок создаются отдельные backend/frontend/docs коммиты с ранее
+согласованной Git identity и настоящими датами.
+
+Ограничения: нет Ticket/check-in, email/outbox, SSE; используется polling.
+Владение email не проверяется, восстановление потерянного личного ключа пока
+не реализовано. UI тестировался сборкой/модулями и живыми API, без browser clicks.
+Следующий этап — Phase 4: билеты и одноразовый check-in.
