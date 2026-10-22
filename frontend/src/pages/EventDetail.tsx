@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import { getEvent } from '../api/events'
 import { formatDate } from '../lib/dates'
 import { ErrorMessage, Loading } from '../components/Feedback'
+import { EventRegistration } from '../components/EventRegistration'
 
 export function EventDetail({ token }: { token: string }) {
   const { id = '' } = useParams()
@@ -19,8 +20,9 @@ export function EventDetail({ token }: { token: string }) {
         <p className="description">{query.data.description || 'Описание пока не добавлено.'}</p>
         <p className="footnote">Время указано в часовом поясе вашего устройства.</p>
       </section>
-      <p className="intro">Онлайн-регистрация пока недоступна.</p>
+      <EventRegistration key={id} eventId={id} />
       {token && <Link className="button" to={`/organizer/events/${id}/edit`}>Редактировать мероприятие</Link>}
+      {token && <p><Link to={`/organizer/events/${id}/participants`}>Список участников и очередь ↗</Link></p>}
     </>}
   </main>
 }

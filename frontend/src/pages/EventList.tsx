@@ -25,7 +25,7 @@ export function EventList({ manage = false }: { manage?: boolean }) {
           <h2><Link to={manage ? `/organizer/events/${event.id}/edit` : `/events/${event.id}`}>{event.title}</Link></h2>
           <time dateTime={event.starts_at}>{formatDate(event.starts_at)}</time>
           <p className="preview">{event.description || 'Описание пока не добавлено.'}</p>
-          <div className="card-footer"><span>Вместимость: {event.capacity}</span><Link to={`/events/${event.id}`}>Подробнее ↗</Link></div>
+          <div className="card-footer"><span>Вместимость: {event.capacity}</span><Link to={manage ? `/organizer/events/${event.id}/participants` : `/events/${event.id}`}>{manage ? 'Участники ↗' : 'Подробнее ↗'}</Link></div>
         </article>)}</div>}
       <nav className="pagination" aria-label="Страницы мероприятий">
         <button className="secondary" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - 20))}>Назад</button>

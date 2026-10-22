@@ -6,6 +6,8 @@ import { OrganizerAccess } from './components/OrganizerAccess'
 import { EventList } from './pages/EventList'
 import { EventDetail } from './pages/EventDetail'
 import { EventEditor } from './pages/EventEditor'
+import { RegistrationStatus } from './pages/RegistrationStatus'
+import { EventParticipants } from './pages/EventParticipants'
 
 function Foundation() {
   const health = useQuery({ queryKey: ['readiness'], queryFn: checkHealth, retry: 1, refetchInterval: 15000 })
@@ -35,9 +37,11 @@ export default function App() {
     <Routes>
       <Route path="/" element={<EventList />} />
       <Route path="/events/:id" element={<EventDetail token={token} />} />
+      <Route path="/registrations/:id" element={<RegistrationStatus />} />
       <Route path="/organizer" element={<OrganizerAccess token={token} onToken={setToken}><EventList manage /></OrganizerAccess>} />
       <Route path="/organizer/events/new" element={<OrganizerAccess token={token} onToken={setToken}><EventEditor token={token} /></OrganizerAccess>} />
       <Route path="/organizer/events/:id/edit" element={<OrganizerAccess token={token} onToken={setToken}><EventEditor token={token} /></OrganizerAccess>} />
+      <Route path="/organizer/events/:id/participants" element={<OrganizerAccess token={token} onToken={setToken}><EventParticipants token={token} /></OrganizerAccess>} />
       <Route path="/system" element={<Foundation />} />
       <Route path="*" element={<main><h1>Страница не найдена</h1><Link to="/">На главную</Link></main>} />
     </Routes>

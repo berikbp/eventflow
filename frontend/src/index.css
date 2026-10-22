@@ -52,6 +52,11 @@ header nav button { margin: 0; padding: 8px 14px; }
 .description { white-space: pre-wrap; line-height: 1.8; overflow-wrap: anywhere; }
 .delete-panel { margin-top: 42px; border-color: #e6c4bc; }
 .danger { background: #9f3930; margin-right: 12px; }
+.table-scroll { width: 100%; overflow-x: auto; margin: 24px 0; }
+table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+th, td { padding: 16px 12px; border-bottom: 1px solid #e1e8e2; }
+th { color: #63716b; font-weight: 600; }
+td:first-child { overflow-wrap: anywhere; }
 @media (max-width: 700px) {
   header { flex-direction: column; align-items: flex-start; padding: 22px; }
   header nav { gap: 16px; }

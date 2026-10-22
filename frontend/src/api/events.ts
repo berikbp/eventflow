@@ -6,6 +6,7 @@ export type Event = {
   description: string
   starts_at: string
   capacity: number
+  confirmed_count: number
   schedule_version: number
   created_at: string
   updated_at: string

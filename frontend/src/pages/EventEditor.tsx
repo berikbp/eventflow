@@ -75,6 +75,7 @@ export function EventEditor({ token }: { token: string }) {
   return <main className="narrow">
     <Link to="/organizer">← Панель организатора</Link>
     <h1>{id ? 'Редактировать мероприятие' : 'Новая встреча'}</h1>
+    {id && <p><Link to={`/organizer/events/${id}/participants`}>Участники и очередь ↗</Link></p>}
     {id && query.isPending ? <Loading /> : id && query.isError ? <><ErrorMessage error={query.error} /><button onClick={() => void query.refetch()}>Повторить</button></> :
       <EditorForm key={id || 'new'} token={token} event={id ? query.data : undefined} />}
   </main>
