@@ -105,3 +105,32 @@
 29. Посещаемость считается по активным использованным билетам, без второго
     изменяемого счётчика. Verify читает snapshot и не резервирует право входа:
     check-in повторно проверяет действительность под блокировкой.
+
+## Phase 5 — 2026-10-24, Asia/Qyzylorda
+
+30. PostgreSQL Notification outbox, отдельный процесс app.worker из того же
+    образа backend. Уникальные логические ключи, retry/backoff и lease заменяют
+    потерянные in-memory background tasks. Новых runtime dependencies нет:
+    SMTP через smtplib в asyncio.to_thread, Mailpit из существующего Compose.
+31. Claim берёт Event, затем Notification с SKIP LOCKED; SMTP идёт после commit.
+    Ack сравнивает lease_token. Это не блокирует регистрацию на время SMTP.
+    Нельзя одновременно гарантировать отсутствие уже передаваемого старого
+    письма и атомарность с внешним SMTP; проверяем актуальность на claim и
+    документируем возможный дубль/письмо в полёте. Exactly-once delivery не заявлена.
+32. Reminder: один на регистрацию и версию расписания, даже при rejoin.
+    Менее 24 часов — немедленно; после начала — skip. При переносе новая версия
+    получает своё напоминание, старые задания проверяют версию. Waiting получают
+    перенос; cancelled исключены. Подтверждение/продвижение — один раз на билет.
+33. SSE + транзакционные Event.revision: проверка версий раз в секунду на поток.
+    Для задания проще воспроизводимого LISTEN reconnect lifecycle и работает
+    с несколькими API-процессами. Это DB polling внутри SSE, не native PG push.
+    Нет replay промежуточных состояний: каждый reconnect вызывает snapshot API.
+    Цена чтения версий и широкая invalidation приемлемы для локального приложения;
+    LISTEN/NOTIFY или общий broadcaster — возможная оптимизация позже.
+34. Реальный browser shutdown выявил незакрываемый Vite proxy SSE. Добавлено
+    завершение downstream при upstream close, именованный heartbeat (10 секунд)
+    и клиентский watchdog (25 секунд). Резервный polling сохраняется.
+
+Просмотренные официальные источники:
+- https://www.postgresql.org/docs/18/sql-select.html (SKIP LOCKED и очереди)
+- https://www.starlette.io/requests/ (disconnect streaming requests)

@@ -167,3 +167,91 @@ Compose Phase 4 пересобран и запущен. Alembic check в кон�
 и checked_in_at сохранились, повторный check-in не увеличил attendance.
 Созданные smoke-записи удалены под Event lock с проверкой UUID/названия;
 пользовательские/demo данные сохранены.
+
+## Phase 5 — SSE и уведомления (2026-10-24)
+
+Backend: 76 passed на PostgreSQL, включая 14 новых outbox-сценариев и 3 SSE.
+После изменения heartbeat отдельно повторены 3 SSE-теста: passed.
+Ruff check/format и uv lock --check прошли. Миграции roundtrip/drift входят
+в регрессию; Alembic check в работающем контейнере также прошёл.
+
+Outbox tests проверяют logical dedup, rollback, promotion, отмену/старый билет,
+ошибку SMTP и backoff, истечение lease после restart, двух worker, отсутствие
+Event lock во время SMTP, backfill старых confirmed, reminders после rejoin,
+перенос раньше/позже и новую версию после отправленного reminder. SMTP в этих
+тестах подменён функцией; фактическая Mailpit-доставка проверяется отдельно.
+
+SSE tests: два независимых генератора получают изменения registration, promotion,
+check-in и Event; initial snapshot на reconnect; отсутствие private payload;
+нефиксированные/откаченные изменения не видны; heartbeat и безопасное закрытие
+при сбое БД. Frontend: 15 passed, включая invalidate, reconnect, heartbeat-watchdog
+и cleanup. npm run build/lint проходят.
+
+Браузер: настоящий headless Chromium 153, две вкладки, через Vite proxy.
+Успешно проверены регистрация (видна организатору за 953ms), waiting, продвижение,
+билет, verify/check-in, attendance=1 и повторная проверка, перенос, остановка/
+старт backend, reconnect обеих вкладок и актуальная дата/название. Проверка
+обновления ограничена 5 секундами, меньше резервного polling 10 секунд.
+Проверена ширина 390px без горизонтального переполнения и просмотрены screenshots
+панели 1440px и личного билета 390px. Это целевой smoke, не полное browser покрытие.
+
+При первой проверке обнаружен открытый downstream SSE после остановки API:
+Vite proxy не передавал close. Исправлено; реальный shutdown/reconnect повторён.
+Эмуляция offline CDP сама не обрывала существующий SSE, поэтому не считается
+проверкой reconnect. Добавлен именованный heartbeat и watchdog, проверенный
+mock timers без реального ожидания 25 секунд.
+
+### Повторить целевой браузерный smoke (опционально)
+
+Нужны работающий Compose, Node 24, Chrome с remote debugging и Docker CLI.
+Скрипт создаёт отдельные события, читает токен из .env, **останавливает/запускает
+backend** и закрывает ранее открытые вкладки EventFlow в этом тестовом Chrome.
+Используйте отдельный профиль браузера. Пример Linux (путь к Chrome свой):
+
+```bash
+chromium --headless --remote-debugging-port=9222 --user-data-dir=/tmp/eventflow-browser about:blank
+node frontend/scripts/smoke_phase5_browser.mjs
+cd backend
+PYTHONPATH=. uv run python scripts/smoke_phase5.py cleanup-browser --state /tmp/eventflow-phase5-browser-state.json
+```
+
+CHROME_DEBUG_URL и EVENTFLOW_URL можно переопределить. В Linux screenshots и
+scoped state сохраняются в /tmp; Node использует os.tmpdir() в других ОС.
+State нужен для очистки даже после неуспешной попытки. Cleanup проверяет UUID
+и название, удаляет только записанные smoke events под блокировкой Event.
+В текущей среде Chrome был в кеше Playwright, ему не хватало libnspr4/libnss3/
+libasound2t64; они скачаны и распакованы в /tmp, системная установка не менялась.
+
+### Проверка реальной почты и restart outbox (WSL/bash)
+
+Запускается на локальном Compose, создаёт отдельное событие и уникальный email.
+Mailpit сохраняет тестовые письма для просмотра. Из корня:
+
+```bash
+docker compose stop worker
+cd backend
+PYTHONPATH=. uv run python scripts/smoke_phase5.py prepare --state /tmp/eventflow-phase5-delivery-state.json
+cd ..
+docker compose restart db backend
+docker compose up -d --wait worker
+cd backend
+PYTHONPATH=. uv run python scripts/smoke_phase5.py verify --keep --state /tmp/eventflow-phase5-delivery-state.json
+cd ..
+docker compose restart worker
+cd backend
+PYTHONPATH=. uv run python scripts/smoke_phase5.py verify --state /tmp/eventflow-phase5-delivery-state.json
+```
+
+prepare ожидает ровно два pending-задания. verify ждёт два sent, проверяет два
+фактических Mailpit-письма (confirmation/reminder) с кодом билета; без --keep
+удаляет только собственные записи и state. Не запускайте второй локальный worker
+одновременно с этим тестом. При ошибке state сохраняется для повторной проверки.
+
+Фактический restart smoke Phase 5 выполнен: prepare сохранил два pending,
+PostgreSQL/backend перезапущены, worker запущен, verify нашёл два sent и два
+физических Mailpit-письма с кодами. После дополнительного restart worker
+повтор verify также нашёл ровно два письма. Очистка собственных событий/регистраций
+и state прошла; все записанные события браузерных попыток тоже удалены через
+cleanup-browser. Письма с синтетическими адресами оставлены в Mailpit как демо.
+Все пять Compose-сервисов работают, worker logs не содержат ошибок,
+финальный Alembic check прошёл.

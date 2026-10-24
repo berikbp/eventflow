@@ -355,3 +355,103 @@ Git sandbox имел read-only .git: коммиты выполнены посл�
 
 Ограничения: browser visual/E2E не выполнены — доступного browser tool нет.
 SSE, transactional outbox и email пока не реализованы. Следующий этап — Phase 5.
+
+## 2026-10-24 — Phase 5: real-time и устойчивые уведомления
+
+Часовой пояс Asia/Qyzylorda, UTC+05:00. Системные контрольные отметки:
+21:39:04 (анализ), 21:45:01 (проверки), 21:48:33 (browser smoke),
+21:53:58 (проверка исправления SSE), 21:59:32 (очистка), 22:00:41 (финальный audit).
+Время предыдущих записей не переписывалось. Инструмент Codex, GPT-6 по данным
+среды; точный вариант модели не указан. Субагенты не использовались.
+
+Пользователь: «ok let's continue our next phase». HEAD на старте 5c26bf0,
+Phase 4 работала; в рабочем дереве только три намеренных удаления docs/prompts,
+которые пользователь ранее просил не коммитить. Сохранено это ограничение.
+
+План и решения:
+- Notification outbox в PostgreSQL, миграция 0004 вместе с Event.revision и
+  транзакционными триггерами Event/Registration/Ticket для SSE invalidation.
+- Бизнес-транзакция создаёт confirmation/promotion вместе с Ticket, перенос
+  создаёт rescheduled и reminder текущей версии. UNIQUE logical key.
+- Отдельный app.worker, без новых dependencies: smtplib через to_thread.
+  Claim: Event → Notification SKIP LOCKED → lease/commit, SMTP без DB locks,
+  ack только для того же lease_token. Retry/backoff, recovery expired leases.
+- Reminder один на регистрацию/версию, менее суток — сразу, после старта skip.
+  Rejoin не повторяет sent reminder той же версии. При переносе новая версия
+  получает своё напоминание. Worker backfill покрывает старые confirmed.
+- SSE /updates отправляет только сигнал без private data. Сервер читает версии
+  событий раз в секунду; начальный snapshot есть на каждом reconnect. Нет replay
+  промежуточных событий. Для локального задания выбран этот простой механизм;
+  его нагрузка и возможная оптимизация LISTEN/NOTIFY описаны в architecture.
+- Exactly-once SMTP не заявляется. Уже захваченное письмо может уйти одновременно
+  с переносом/отменой; актуальность проверена на claim, а не атомарно с SMTP.
+  Сбой после отправки до ack может повторить доставку с тем же Message-ID.
+
+Реализация:
+- Добавлены Notification model/service/worker, migration 0004, Settings SMTP,
+  worker в Compose и .env.example. Email содержит билет и public URL;
+  ключ управления не сохраняется в outbox и остаётся в личной ссылке браузера.
+- SSE endpoint, Event revision triggers, React EventSource + Query invalidation,
+  статус соединения, heartbeat и watchdog. Polling 10 секунд оставлен резервом.
+- UI больше не говорит, что email отсутствует; формы/дата/списки обновляются.
+- Добавлены PostgreSQL tests уведомлений и SSE, frontend regression и live scripts.
+
+Фактические проверки:
+- Первоначальная регрессия после миграции: 59 passed in 20.87s.
+- Первые notification tests: 11 passed in 8.99s.
+- После добавления SSE: 73 passed in 34.39s.
+- С rejoin/новой версией/переносом позже: **76 passed in 37.44s** PostgreSQL.
+  Из них 14 новых outbox-сценариев и 3 SSE. Fixture UUID schemas сохраняет user DB.
+- После изменения heartbeat повторены SSE: 3 passed in 2.07s.
+- Frontend: 15 passed через Node --test-isolation=none, npm test (5 файлов),
+  TypeScript/Vite build и lint прошли. Frontend test проверяет watchdog mock timers.
+- Ruff check passed, format --check: 50 files formatted; uv lock --check прошёл,
+  41 packages. lock/dependencies не менялись.
+- Compose build/up прошёл, все пять сервисов работают. Миграция применена,
+  Alembic check в контейнере: No new upgrade operations detected.
+
+Browser QA и обнаруженная ошибка:
+Локальный Chromium 153 был в кеше Playwright, но не запускался из-за недостающих
+libnspr4/libnss3/libasound2t64. Три пакета скачаны/распакованы в /tmp без системной
+установки. Запущен отдельный headless профиль, управление через CDP и Node WebSocket.
+Первые попытки тестового скрипта выявили ожидание .ticket-code до завершения
+загрузки и влияние оставленных вкладок на число соединений; исправлен сам runner.
+
+Реальный shutdown обнаружил дефект приложения: Vite proxy оставлял downstream
+SSE открытым после остановки backend, соединение визуально оставалось connected.
+Добавлена передача upstream close через response.end, именованный heartbeat
+10 секунд и watchdog 25 секунд. CDP offline сам по себе не оборвал существующий
+поток, поэтому финальный reconnect проверен настоящей остановкой/start backend.
+
+Полный двухвкладочный smoke прошёл: регистрация видна организатору за **953ms**,
+waiting, cancellation → promotion, private ticket, verify, check-in, attendance=1,
+повторная проверка билета, перенос, остановка API, reconnect обеих вкладок с новым
+snapshot. Ассерты обновления ограничены 5 секундами, меньше fallback polling 10s.
+Runtime JS exceptions не обнаружены. Снимок background tab ожидал активации;
+после bringToFront сохранены /tmp/eventflow-phase5-dashboard.png и
+/tmp/eventflow-phase5-mobile.png и визуально просмотрены. Панель 1440px и билет
+390px читаемы, горизонтальное переполнение мобильной страницы не обнаружено.
+Runner сохранён в frontend/scripts/smoke_phase5_browser.mjs с универсальными
+путями, CDP timeout и bringToFront; Node syntax check и lint прошли.
+
+Live SMTP/restart QA:
+При остановленном worker scripts/smoke_phase5.py prepare создал отдельное событие
+с уникальным email и **двумя pending** (confirmation + immediate reminder).
+Перезапущены db/backend, запущен worker. verify проверил **два sent и два письма
+в Mailpit** с кодами билетов. После дополнительного restart worker повтор verify
+также показал два письма. Один ранний prepare попал в остановленный для browser
+теста backend и получил 502; после восстановления повтор успешно завершён.
+Удалены только собственные smoke events/registrations под Event lock с проверкой
+UUID/названия, включая события неуспешных браузерных попыток. State-файлы удалены.
+Синтетические email-письма сохранены в Mailpit для просмотра; user/demo не менялись.
+
+Документация и воспроизводимые команды дополнены в README, architecture,
+decisions, requirements, testing, agent-prompts. Основные ограничения теперь:
+локальные общий organizer token/SMTP/Vite, нет email ownership verification и
+восстановления утраченной личной ссылки; SSE читает DB версии, SMTP at-least-once.
+Полная QA из чистой среды и финальная поставка остаются Phase 6.
+
+После проверок созданы отдельные коммиты:
+- 7224fb1 — outbox, worker, SSE, migration и backend/live tests.
+- 1771a62 — frontend SSE/reconnect, proxy fix, watchdog и browser runner.
+Коммиты сделаны с настоящими датами; удаления docs/prompts не включены.
