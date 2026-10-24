@@ -9,8 +9,9 @@ from app.api.events import router as events_router
 from app.api.health import router
 from app.api.organizer import router as organizer_router
 from app.api.registrations import router as registrations_router
+from app.api.tickets import router as tickets_router
 from app.core.config import Settings
-from app.services.errors import Conflict, RegistrationNotFound
+from app.services.errors import Conflict, RegistrationNotFound, TicketNotFound
 from app.services.events import EventNotFound
 
 
@@ -35,6 +36,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(events_router)
     app.include_router(organizer_router)
     app.include_router(registrations_router)
+    app.include_router(tickets_router)
+
+    @app.exception_handler(TicketNotFound)
+    async def ticket_not_found(request: Request, exc: TicketNotFound) -> JSONResponse:
+        return JSONResponse(
+            status_code=404, content={"detail": "Билет не найден для этого мероприятия"}
+        )
 
     @app.exception_handler(Conflict)
     async def conflict(request: Request, exc: Conflict) -> JSONResponse:

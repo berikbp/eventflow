@@ -121,6 +121,7 @@ async def test_cancelling_waiter_does_not_promote_over_capacity(client):
         "waiting": 1,
         "available": 0,
         "registration_open": True,
+        "checked_in": 0,
     }
 
 

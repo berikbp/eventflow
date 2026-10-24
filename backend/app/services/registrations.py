@@ -9,9 +9,11 @@ from sqlalchemy.orm import aliased
 
 from app.models.event import Event
 from app.models.registration import Registration
+from app.models.ticket import Ticket
 from app.schemas.registration import Availability, RegistrationRead
 from app.services.errors import Conflict, RegistrationNotFound
 from app.services.events import EventNotFound, get_event
+from app.services.tickets import issue_ticket, revoke_ticket
 
 
 def hash_token(token: str) -> str:
@@ -39,9 +41,12 @@ async def promote_waiters(session: AsyncSession, event: Event) -> None:
         .order_by(Registration.queue_order)
         .limit(free)
     )
-    for registration in waiting:
+    promoted = waiting.all()
+    for registration in promoted:
         registration.status = "confirmed"
     await session.flush()
+    for registration in promoted:
+        await issue_ticket(session, registration)
     await session.refresh(event)
 
 
@@ -58,11 +63,19 @@ def snapshot_query():
         .correlate(Registration)
         .scalar_subquery()
     )
-    return select(Registration, position).execution_options(populate_existing=True)
+    checked_in = (
+        select(Ticket.checked_in_at)
+        .where(Ticket.registration_id == Registration.id, Ticket.revoked_at.is_(None))
+        .correlate(Registration)
+        .scalar_subquery()
+    )
+    return select(Registration, position, checked_in).execution_options(
+        populate_existing=True
+    )
 
 
 def serialize_registration(
-    registration: Registration, position: int
+    registration: Registration, position: int, checked_in_at: datetime | None
 ) -> RegistrationRead:
     return RegistrationRead(
         id=registration.id,
@@ -73,6 +86,7 @@ def serialize_registration(
         queue_position=position if registration.status == "waiting" else None,
         created_at=registration.created_at,
         updated_at=registration.updated_at,
+        checked_in_at=checked_in_at,
     )
 
 
@@ -124,6 +138,8 @@ async def register(
         )
         session.add(registration)
         await session.flush()
+        if registration.status == "confirmed":
+            await issue_ticket(session, registration)
         return await read_registration(session, registration)
 
 
@@ -163,8 +179,11 @@ async def change_participation(
                 "confirmed" if event.confirmed_count < event.capacity else "waiting"
             )
         else:
+            await revoke_ticket(session, registration.id)
             registration.status = "cancelled"
         await session.flush()
+        if rejoin and registration.status == "confirmed":
+            await issue_ticket(session, registration)
         await promote_waiters(session, event)
         await session.refresh(registration)
         return await read_registration(session, registration)
@@ -179,18 +198,34 @@ async def availability(session: AsyncSession, event_id: UUID) -> Availability:
         .correlate(Event)
         .scalar_subquery()
     )
+    checked_in = (
+        select(func.count())
+        .select_from(Ticket)
+        .join(Registration, Registration.id == Ticket.registration_id)
+        .where(
+            Registration.event_id == Event.id,
+            Registration.status == "confirmed",
+            Ticket.revoked_at.is_(None),
+            Ticket.checked_in_at.is_not(None),
+        )
+        .correlate(Event)
+        .scalar_subquery()
+    )
     row = (
-        await session.execute(select(Event, waiting).where(Event.id == event_id))
+        await session.execute(
+            select(Event, waiting, checked_in).where(Event.id == event_id)
+        )
     ).first()
     if row is None:
         raise EventNotFound
-    event, waiting_count = row
+    event, waiting_count, checked_in_count = row
     return Availability(
         capacity=event.capacity,
         confirmed=event.confirmed_count,
         waiting=waiting_count,
         available=event.capacity - event.confirmed_count,
         registration_open=event.starts_at > datetime.now(UTC),
+        checked_in=checked_in_count,
     )
 
 

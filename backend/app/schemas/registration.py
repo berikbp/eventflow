@@ -29,6 +29,7 @@ class RegistrationRead(BaseModel):
     queue_position: int | None
     created_at: datetime
     updated_at: datetime
+    checked_in_at: datetime | None
 
 
 class Availability(BaseModel):
@@ -37,6 +38,7 @@ class Availability(BaseModel):
     waiting: int
     available: int
     registration_open: bool
+    checked_in: int
 
 
 class RegistrationPage(BaseModel):

@@ -4,3 +4,7 @@ class Conflict(Exception):
 
 class RegistrationNotFound(Exception):
     pass
+
+
+class TicketNotFound(Exception):
+    pass
