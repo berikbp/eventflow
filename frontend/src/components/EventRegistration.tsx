@@ -45,7 +45,7 @@ export function EventRegistration({ eventId }: { eventId: string }) {
         <label>Email<input type="email" required maxLength={254} autoComplete="email" disabled={registration.isPending} value={email} onChange={event => setEmail(event.target.value)} /></label>
         <ErrorMessage error={registration.error} />
         <button disabled={registration.isPending}>{registration.isPending ? 'Регистрируем…' : availability.data.available ? 'Зарегистрироваться' : 'Встать в очередь'}</button>
-        <p className="footnote">После регистрации сохраните личную ссылку: по ней можно проверить статус и отменить участие. Не передавайте её другим людям. Письма пока не отправляются.</p>
+        <p className="footnote">После регистрации сохраните личную ссылку: по ней можно проверить статус и отменить участие. Не передавайте её другим людям. Подтверждение с билетом придёт по email после получения места.</p>
       </form> : <p role="status" className="muted">Мероприятие уже началось. Регистрация закрыта.</p>}
     </>}
   </section>

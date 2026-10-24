@@ -10,6 +10,14 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api': {
           target: process.env.API_PROXY_TARGET || env.API_PROXY_TARGET || 'http://127.0.0.1:8000',
+          configure: (proxy) => {
+            proxy.on('proxyRes', (upstream, _request, response) => {
+              if (upstream.headers['content-type']?.startsWith('text/event-stream')) {
+                // Propagate upstream shutdown so EventSource can reconnect.
+                upstream.on('close', () => response.end())
+              }
+            })
+          },
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },

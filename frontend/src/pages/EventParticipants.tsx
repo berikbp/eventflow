@@ -8,7 +8,7 @@ import { ErrorMessage, Loading } from '../components/Feedback'
 export function EventParticipants({ token }: { token: string }) {
   const { id = '' } = useParams()
   const [offset, setOffset] = useState(0)
-  const event = useQuery({ queryKey: ['event', id], queryFn: () => getEvent(id) })
+  const event = useQuery({ queryKey: ['event', id], queryFn: () => getEvent(id), refetchInterval: 10000 })
   const availability = useQuery({ queryKey: ['availability', id], queryFn: () => getAvailability(id), refetchInterval: 10000 })
   const list = useQuery({
     queryKey: ['participants', id, offset, token],
@@ -35,6 +35,6 @@ export function EventParticipants({ token }: { token: string }) {
       </table></div>}
       <nav className="pagination" aria-label="Страницы регистраций"><button className="secondary" disabled={!offset} onClick={() => setOffset(Math.max(0, offset - 20))}>Назад</button><span>Страница {Math.floor(offset / 20) + 1}</span><button className="secondary" disabled={offset + 20 >= list.data.total} onClick={() => setOffset(offset + 20)}>Далее</button></nav>
     </section>}
-    <p className="footnote">Список и счётчики проверяются каждые 10 секунд. Отменённые записи сохраняются в истории.</p>
+    <p className="footnote">Список и счётчики обновляются автоматически. Отменённые записи сохраняются в истории.</p>
   </main>
 }

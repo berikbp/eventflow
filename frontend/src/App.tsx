@@ -8,6 +8,7 @@ import { EventDetail } from './pages/EventDetail'
 import { EventEditor } from './pages/EventEditor'
 import { RegistrationStatus } from './pages/RegistrationStatus'
 import { TicketCheckIn } from './pages/TicketCheckIn'
+import { RealtimeStatus } from './components/RealtimeStatus'
 import { EventParticipants } from './pages/EventParticipants'
 
 function Foundation() {
@@ -35,6 +36,7 @@ export default function App() {
     <header><Link to="/" className="brand">eventflow<span>↗</span></Link>
       <nav aria-label="Главная навигация"><Link to="/">Мероприятия</Link><Link to="/organizer">Организатору</Link><Link to="/system">Статус</Link>{token && <button className="secondary" onClick={() => setToken('')}>Выйти</button>}</nav>
     </header>
+    <RealtimeStatus />
     <Routes>
       <Route path="/" element={<EventList />} />
       <Route path="/events/:id" element={<EventDetail token={token} />} />

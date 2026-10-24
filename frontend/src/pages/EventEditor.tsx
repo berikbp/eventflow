@@ -57,7 +57,7 @@ function EditorForm({ event, token }: { event?: Event; token: string }) {
         <div className="form-row"><label>Дата и время<input required type="datetime-local" value={date} onChange={e => setDate(e.target.value)} /></label>
           <label>Вместимость<input required type="number" min="1" max="1000000" step="1" value={capacity} onChange={e => setCapacity(e.target.value)} /></label></div>
         <p className="footnote">Время указано в часовом поясе устройства: {Intl.DateTimeFormat().resolvedOptions().timeZone}.</p>
-        {event && <p className="footnote">Перенос пока сохраняет только дату. Автоматические уведомления ещё не подключены.</p>}
+        {event && <p className="footnote">При переносе участники получат новую дату по email, напоминания будут пересчитаны.</p>}
         <ErrorMessage error={formError || save.error} />
         <button disabled={busy}>{save.isPending ? 'Сохраняем…' : event ? 'Сохранить изменения' : 'Создать мероприятие'}</button>
       </fieldset>

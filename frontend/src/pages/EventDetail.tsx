@@ -8,7 +8,7 @@ import { EventRegistration } from '../components/EventRegistration'
 export function EventDetail({ token }: { token: string }) {
   const { id = '' } = useParams()
   const location = useLocation()
-  const query = useQuery({ queryKey: ['event', id], queryFn: () => getEvent(id) })
+  const query = useQuery({ queryKey: ['event', id], queryFn: () => getEvent(id), refetchInterval: 10000 })
   return <main className="narrow">
     <Link to="/">← Все мероприятия</Link>
     {query.isPending && <Loading />}

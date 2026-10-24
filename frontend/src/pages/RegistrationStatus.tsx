@@ -80,7 +80,7 @@ export function RegistrationStatus() {
           <button className="danger" onClick={() => setConfirmCancel(true)}>Отменить участие</button>)}
         {availability.data && !availability.data.registration_open && <p className="muted">Мероприятие началось. Изменение участия закрыто.</p>}
         <ErrorMessage error={availability.error} />
-        <p className="footnote">Статус проверяется каждые 10 секунд. Подтверждения и напоминания по email пока не отправляются.</p>
+        <p className="footnote">Статус обновляется автоматически. Билет и напоминания отправляются по email; сохраните личную ссылку управления.</p>
       </section>}
     </>}
     <p><Link to="/">← Все мероприятия</Link></p>

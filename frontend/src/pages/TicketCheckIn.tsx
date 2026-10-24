@@ -10,7 +10,7 @@ export function TicketCheckIn({ token }: { token: string }) {
   const { id = '' } = useParams()
   const [code, setCode] = useState('')
   const client = useQueryClient()
-  const event = useQuery({ queryKey: ['event', id], queryFn: () => getEvent(id) })
+  const event = useQuery({ queryKey: ['event', id], queryFn: () => getEvent(id), refetchInterval: 10000 })
   const verify = useMutation({ mutationFn: () => verifyTicket(id, code, token) })
   const admission = useMutation({
     mutationFn: () => checkIn(id, code, token),

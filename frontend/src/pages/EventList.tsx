@@ -8,7 +8,7 @@ import { ErrorMessage, Loading } from '../components/Feedback'
 export function EventList({ manage = false }: { manage?: boolean }) {
   const [offset, setOffset] = useState(0)
   const location = useLocation()
-  const query = useQuery({ queryKey: ['events', offset], queryFn: () => listEvents(offset) })
+  const query = useQuery({ queryKey: ['events', offset], queryFn: () => listEvents(offset), refetchInterval: 10000 })
   return <main>
     <div className="page-heading"><div><span className="eyebrow">{manage ? 'ПАНЕЛЬ ОРГАНИЗАТОРА' : 'ВСТРЕЧАЙТЕСЬ. УЗНАВАЙТЕ. УЧАСТВУЙТЕ.'}</span>
       <h1>{manage ? 'Ваши мероприятия' : 'Найдите свою встречу'}</h1>
