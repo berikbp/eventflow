@@ -65,3 +65,5 @@ td:first-child { overflow-wrap: anywhere; }
   .event-grid, .form-row { grid-template-columns: 1fr; }
   .panel { padding: 22px; }
 }
+
+.ticket-code { font-family: monospace; font-size: clamp(1rem, 4vw, 1.5rem); overflow-wrap: anywhere; letter-spacing: .05em; }

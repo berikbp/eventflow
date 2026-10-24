@@ -7,6 +7,7 @@ import { EventList } from './pages/EventList'
 import { EventDetail } from './pages/EventDetail'
 import { EventEditor } from './pages/EventEditor'
 import { RegistrationStatus } from './pages/RegistrationStatus'
+import { TicketCheckIn } from './pages/TicketCheckIn'
 import { EventParticipants } from './pages/EventParticipants'
 
 function Foundation() {
@@ -42,6 +43,7 @@ export default function App() {
       <Route path="/organizer/events/new" element={<OrganizerAccess token={token} onToken={setToken}><EventEditor token={token} /></OrganizerAccess>} />
       <Route path="/organizer/events/:id/edit" element={<OrganizerAccess token={token} onToken={setToken}><EventEditor token={token} /></OrganizerAccess>} />
       <Route path="/organizer/events/:id/participants" element={<OrganizerAccess token={token} onToken={setToken}><EventParticipants token={token} /></OrganizerAccess>} />
+      <Route path="/organizer/events/:id/check-in" element={<OrganizerAccess token={token} onToken={setToken}><TicketCheckIn token={token} /></OrganizerAccess>} />
       <Route path="/system" element={<Foundation />} />
       <Route path="*" element={<main><h1>Страница не найдена</h1><Link to="/">На главную</Link></main>} />
     </Routes>

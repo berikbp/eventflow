@@ -4,11 +4,11 @@ export type Registration = {
   id: string; event_id: string; email: string
   status: 'confirmed' | 'waiting' | 'cancelled'
   queue_order: number; queue_position: number | null
-  created_at: string; updated_at: string
+  created_at: string; updated_at: string; checked_in_at: string | null
 }
 export type Availability = {
   capacity: number; confirmed: number; waiting: number; available: number
-  registration_open: boolean
+  registration_open: boolean; checked_in: number
 }
 export type RegistrationPage = {
   items: Registration[]; total: number; limit: number; offset: number
