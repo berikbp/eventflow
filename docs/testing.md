@@ -126,3 +126,44 @@ browser end-to-end coverage не заявляется.
 для очистки удалены только записи созданного smoke-event в транзакции с проверкой
 его UUID/названия и Event row lock. Demo/user events не менялись.
 Полный сценарий кликами не выполнялся: browser inventory пуст.
+
+## Phase 4 — билеты
+
+2026-10-24: 59 backend tests passed на настоящем PostgreSQL, включая 10 новых
+сценариев tickets. Команда из backend (WSL):
+
+```bash
+TEST_DATABASE_URL=postgresql+asyncpg://eventflow:eventflow_local@127.0.0.1:5433/eventflow .venv/bin/python -m pytest -q
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
+UV_CACHE_DIR=/tmp/eventflow-uv-cache uv lock --check --offline
+```
+
+Проверены выдача/retry, отсутствие билета у waiting/cancelled, доступ, нормализация
+кода, отзыв, новый код при повторном подтверждении, promotion при росте capacity,
+20 конкурентных входов (один новый вход), гонка отмены/check-in, UNIQUE и rollback,
+backfill существующих confirmed и Alembic drift check.
+
+Frontend: npm test, npm run build, npm run lint прошли. Дополнительно
+`node --experimental-strip-types --test --test-reporter spec --test-isolation=none tests/*.test.ts`
+показал 14 отдельных успешных тестов. Стандартный npm test в этой версии Node
+показывает итог по четырём файлам. Это модульные проверки, не browser E2E.
+
+Ручной сценарий:
+1. Создать будущее событие на одно место, зарегистрировать A и B.
+2. A видит билет по личной ссылке; B ожидает без билета.
+3. Отменить A: его билет отозван, B получает новый билет.
+4. Организатор: «Участники» → «Проверка билетов и check-in». Проверить старый
+   код A (отозван), код B (действителен), код другого события (404).
+5. Подтвердить вход B. Проверить тот же код повторно: время прежнее,
+   посещаемость остаётся 1. Отмена B отклоняется, место не передаётся очереди.
+6. Проверить обновление счётчика/личного статуса в пределах 10 секунд polling.
+
+Визуальная проверка браузером в текущей сессии не выполнена: доступного
+browser-инструмента нет. Запуск из полностью чистой среды остаётся Phase 6.
+
+Compose Phase 4 пересобран и запущен. Alembic check в контейнере прошёл.
+Живой API smoke через frontend proxy прошёл; после restart db/backend билет
+и checked_in_at сохранились, повторный check-in не увеличил attendance.
+Созданные smoke-записи удалены под Event lock с проверкой UUID/названия;
+пользовательские/demo данные сохранены.
