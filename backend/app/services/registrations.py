@@ -46,7 +46,7 @@ async def promote_waiters(session: AsyncSession, event: Event) -> None:
         registration.status = "confirmed"
     await session.flush()
     for registration in promoted:
-        await issue_ticket(session, registration)
+        await issue_ticket(session, registration, promoted=True)
     await session.refresh(event)
 
 

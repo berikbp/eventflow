@@ -19,7 +19,9 @@ async def active_ticket(session: AsyncSession, registration_id: UUID) -> Ticket 
     )
 
 
-async def issue_ticket(session: AsyncSession, registration: Registration) -> Ticket:
+async def issue_ticket(
+    session: AsyncSession, registration: Registration, *, promoted: bool = False
+) -> Ticket:
     # Caller holds the event lock and owns the surrounding transaction.
     existing = await active_ticket(session, registration.id)
     if existing is not None:
@@ -27,6 +29,9 @@ async def issue_ticket(session: AsyncSession, registration: Registration) -> Tic
     ticket = Ticket(registration_id=registration.id)
     session.add(ticket)
     await session.flush()
+    from app.services.notifications import ticket_notifications
+
+    await ticket_notifications(session, registration, ticket, promoted)
     return ticket
 
 

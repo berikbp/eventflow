@@ -29,6 +29,21 @@ services:
       interval: 10s
       timeout: 7s
       retries: 5
+  worker:
+    build: ./backend
+    command: ["/app/.venv/bin/python", "-m", "app.worker"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-eventflow}:${POSTGRES_PASSWORD:-eventflow_local}@db:5432/${POSTGRES_DB:-eventflow}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_FROM: ${SMTP_FROM:-EventFlow <noreply@eventflow.local>}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:5173}
+    depends_on:
+      backend:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    restart: unless-stopped
   frontend:
     build: ./frontend
     environment:

@@ -51,7 +51,8 @@ async def update_event(
             raise Conflict(
                 "Вместимость не может быть меньше числа подтверждённых участников"
             )
-        if "starts_at" in changes and changes["starts_at"] != event.starts_at:
+        rescheduled = "starts_at" in changes and changes["starts_at"] != event.starts_at
+        if rescheduled:
             event.schedule_version += 1
         for field, value in changes.items():
             setattr(event, field, value)
@@ -60,6 +61,10 @@ async def update_event(
 
         await promote_waiters(session, event)
         await session.refresh(event)
+        if rescheduled:
+            from app.services.notifications import reschedule_notifications
+
+            await reschedule_notifications(session, event)
     return event
 
 

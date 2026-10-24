@@ -40,6 +40,7 @@ class Event(Base):
     capacity: Mapped[int] = mapped_column(Integer)
     confirmed_count: Mapped[int] = mapped_column(Integer, server_default="0")
     next_registration_order: Mapped[int] = mapped_column(BigInteger, server_default="0")
+    revision: Mapped[int] = mapped_column(BigInteger, server_default="1")
     schedule_version: Mapped[int] = mapped_column(
         Integer, default=1, server_default="1"
     )
