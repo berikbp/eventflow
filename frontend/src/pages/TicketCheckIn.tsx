@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { checkIn, verifyTicket } from '../api/tickets'
 import { getEvent } from '../api/events'
-import { ErrorMessage } from '../components/Feedback'
+import { ErrorMessage, Loading } from '../components/Feedback'
 import { formatDate } from '../lib/dates'
 
 export function TicketCheckIn({ token }: { token: string }) {
@@ -14,6 +14,7 @@ export function TicketCheckIn({ token }: { token: string }) {
   const verify = useMutation({ mutationFn: () => verifyTicket(id, code, token) })
   const admission = useMutation({
     mutationFn: () => checkIn(id, code, token),
+    onError: () => verify.reset(),
     onSuccess: async () => {
       await Promise.all([
         client.invalidateQueries({ queryKey: ['availability', id] }),
@@ -26,7 +27,9 @@ export function TicketCheckIn({ token }: { token: string }) {
   return <main className="narrow">
     <Link to={`/organizer/events/${id}/participants`}>← Участники и статистика</Link>
     <h1>Проверка билетов</h1><p>{event.data?.title}</p>
-    <ErrorMessage error={event.error} />
+    {event.isPending && <Loading />}
+    {event.isError && <><ErrorMessage error={event.error} /><button onClick={() => void event.refetch()}>Повторить</button></>}
+    {event.data && !event.isError && <>
     <form className="panel form" onSubmit={e => { e.preventDefault(); admission.reset(); verify.mutate() }}>
       <label>Код билета<input required maxLength={256} autoComplete="off" spellCheck={false} value={code} disabled={busy} onChange={e => { setCode(e.target.value); verify.reset(); admission.reset() }} placeholder="32 символа с билета участника" /></label>
       <button disabled={busy || !code.trim()}>{verify.isPending ? 'Проверяем…' : 'Проверить билет'}</button>
@@ -40,5 +43,6 @@ export function TicketCheckIn({ token }: { token: string }) {
       </div>}
       <p className="footnote">Проверка не отмечает посещение. Вход фиксируется кнопкой «Подтвердить вход». При потере ответа проверьте тот же код снова.</p>
     </form>
+    </>}
   </main>
 }

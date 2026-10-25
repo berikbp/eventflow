@@ -13,7 +13,7 @@ export function EventDetail({ token }: { token: string }) {
     <Link to="/">← Все мероприятия</Link>
     {query.isPending && <Loading />}
     {query.isError && <><ErrorMessage error={query.error} /><button onClick={() => void query.refetch()}>Повторить</button></>}
-    {query.data && <>
+    {query.data && !query.isError && <>
       {location.state?.notice && <p role="status" className="status">{location.state.notice}</p>}
       <h1>{query.data.title}</h1>
       <section className="panel"><dl className="event-meta"><div><dt>Дата и время</dt><dd><time dateTime={query.data.starts_at}>{formatDate(query.data.starts_at)}</time></dd></div><div><dt>Вместимость</dt><dd>{query.data.capacity} участников</dd></div></dl>

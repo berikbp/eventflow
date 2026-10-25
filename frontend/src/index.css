@@ -69,3 +69,8 @@ td:first-child { overflow-wrap: anywhere; }
 .ticket-code { font-family: monospace; font-size: clamp(1rem, 4vw, 1.5rem); overflow-wrap: anywhere; letter-spacing: .05em; }
 
 .live-status { max-width: 1120px; margin: 1rem auto; padding: 0 1.5rem; font-size: .8rem; color: #5b665e; }
+
+/* Keep long event titles and pagination usable on narrow screens. */
+h1 { overflow-wrap: anywhere; }
+.pagination, .card-footer { flex-wrap: wrap; }
+main { overflow-wrap: anywhere; }

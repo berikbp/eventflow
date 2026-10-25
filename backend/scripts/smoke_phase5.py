@@ -44,6 +44,7 @@ async def main():
                         "Phase 5 browser smoke",
                         "Phase 5 updated live",
                         "Phase 5 reconnected",
+                        "Phase 6 " + "x" * 190,
                     }
                     await connection.execute(
                         text("DELETE FROM registrations WHERE event_id=:id"),

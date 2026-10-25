@@ -2,6 +2,7 @@
 // Stops/restarts the backend to test reconnection. Leaves scoped state for cleanup.
 // No extra npm dependencies; see docs/testing.md. Never prints access credentials.
 import fs from 'node:fs/promises'
+import { connectTab } from './browser.mjs'
 import {execFile} from 'node:child_process'
 import {promisify} from 'node:util'
 import assert from 'node:assert/strict'
@@ -26,27 +27,7 @@ for (const page of await (await fetch(debugOrigin+'/json/list')).json()) {
 const event = await api('/events', {title: 'Phase 5 browser smoke', capacity: 1, starts_at: new Date(Date.now() + 72*3600000).toISOString()}, true)
 const previous=JSON.parse(await fs.readFile(statePath,'utf8').catch(()=> '[]'));
 await fs.writeFile(statePath, JSON.stringify([...(Array.isArray(previous)?previous:[previous]),{eid:event.id}]), {mode:0o600})
-class Tab {
-  constructor(ws) { this.ws = ws; this.seq=0; this.pending = new Map(); this.errors=[]; ws.addEventListener('message', event => { const message=JSON.parse(event.data); if(message.id) { const pending=this.pending.get(message.id); this.pending.delete(message.id); if (pending) { if (message.error) pending.reject(new Error(message.error.message)); else pending.resolve(message.result) } } if(message.method==='Runtime.exceptionThrown') this.errors.push(message.params.exceptionDetails.text) }) }
-  send(method, params={}) {
-    return new Promise((resolve,reject) => {
-      const id=++this.seq
-      const timer=setTimeout(() => { this.pending.delete(id); reject(new Error('CDP timed out: '+method)) }, 20000)
-      this.pending.set(id,{resolve: result => { clearTimeout(timer); resolve(result) }, reject: error => {clearTimeout(timer); reject(error)}})
-      this.ws.send(JSON.stringify({id,method,params}))
-    })
-  }
-  async evaluate(expression) { const result=await this.send('Runtime.evaluate', {expression, returnByValue:true, awaitPromise:true}); if(result.exceptionDetails) throw new Error(result.exceptionDetails.text); return result.result.value }
-  async wait(expression, timeout=6000) { const end=Date.now()+timeout; while(Date.now()<end) { if(await this.evaluate(expression)) return; await new Promise(resolve=>setTimeout(resolve,50)) } throw new Error('Browser assertion timed out: '+expression) }
-  async text(text,timeout) { await this.wait(`document.body.innerText.includes(${JSON.stringify(text)})`,timeout) }
-  async click(text) { await this.evaluate(`(() => { const button=[...document.querySelectorAll('button,a')].find(node=>node.textContent.trim()===${JSON.stringify(text)}); if(!button) throw new Error('Button missing'); button.click() })()` ) }
-  async fill(selector,value) { await this.wait(`!!document.querySelector(${JSON.stringify(selector)})`); await this.evaluate(`(() => { const input=document.querySelector(${JSON.stringify(selector)}); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,${JSON.stringify(value)}); input.dispatchEvent(new Event('input',{bubbles:true})) })()` ) }
-  async navigate(path) { await this.send('Page.navigate',{url:origin+path}) }
-}
-async function tab(path) {
-  const target=await (await fetch(debugOrigin+'/json/new?'+encodeURIComponent(origin+path), {method:'PUT'})).json()
-  const ws=new WebSocket(target.webSocketDebuggerUrl); await new Promise(resolve=>ws.addEventListener('open',resolve,{once:true})); const t=new Tab(ws); await t.send('Runtime.enable'); await t.send('Page.enable'); return t
-}
+const tab = path => connectTab(path, { origin, debugOrigin })
 const organizer=await tab(`/organizer/events/${event.id}/participants`)
 const participant=await tab(`/events/${event.id}`)
 try {
@@ -100,5 +81,5 @@ try {
   console.log(`Two-tab browser smoke passed: registration visible in ${latency}ms, waiting, promotion, check-in, attendance, reschedule, reconnect, mobile width`)
 } finally {
   await promisify(execFile)('docker',['compose','up','-d','--wait','backend'],{cwd:root})
-  organizer.ws.close(); participant.ws.close()
+  await Promise.all([organizer.close(), participant.close()])
 }

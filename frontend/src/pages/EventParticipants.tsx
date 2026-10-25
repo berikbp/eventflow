@@ -19,7 +19,7 @@ export function EventParticipants({ token }: { token: string }) {
     <h1>{event.data?.title || 'Участники мероприятия'}</h1>
     <p><Link to={`/organizer/events/${id}/check-in`}>Проверка билетов и check-in</Link> · <Link to={`/organizer/events/${id}/edit`}>Редактировать мероприятие</Link> · <Link to={`/events/${id}`}>Публичная страница</Link></p>
     <ErrorMessage error={event.error} /><ErrorMessage error={availability.error} />
-    {availability.data && <dl className="panel event-meta">
+    {availability.data && !availability.isError && <dl className="panel event-meta">
       <div><dt>Подтверждено</dt><dd>{availability.data.confirmed} / {availability.data.capacity}</dd></div>
       <div><dt>Прошли check-in</dt><dd>{availability.data.checked_in}</dd></div>
       <div><dt>В очереди</dt><dd>{availability.data.waiting}</dd></div>

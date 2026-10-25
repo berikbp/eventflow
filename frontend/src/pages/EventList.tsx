@@ -17,7 +17,7 @@ export function EventList({ manage = false }: { manage?: boolean }) {
     {location.state?.notice && <p className="status" role="status">{location.state.notice}</p>}
     {query.isPending && <Loading />}
     {query.isError && <div><ErrorMessage error={query.error} /><button onClick={() => void query.refetch()}>Повторить</button></div>}
-    {query.data && <>
+    {query.data && !query.isError && <>
       <p className="muted">Всего мероприятий: {query.data.total}</p>
       {query.data.items.length === 0 ? <section className="panel empty"><h2>{offset ? 'Здесь пока пусто' : 'Мероприятий пока нет'}</h2><p>{manage ? 'Создайте первое мероприятие — оно появится в общем списке.' : 'Загляните позже: новые встречи скоро появятся здесь.'}</p></section> :
         <div className="event-grid">{query.data.items.map(event => <article key={event.id} className="panel event-card">
