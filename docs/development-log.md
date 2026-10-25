@@ -455,3 +455,105 @@ decisions, requirements, testing, agent-prompts. Основные огранич
 - 7224fb1 — outbox, worker, SSE, migration и backend/live tests.
 - 1771a62 — frontend SSE/reconnect, proxy fix, watchdog и browser runner.
 Коммиты сделаны с настоящими датами; удаления docs/prompts не включены.
+
+## 2026-10-25 — Phase 6: стабилизация и техническая подготовка к сдаче
+
+Часовой пояс Asia/Qyzylorda, UTC+05:00. Реальные контрольные отметки системных
+команд: 15:56:59 (аудит), 16:07:21 (проверки), 16:10:21 (отчёт),
+16:11:30 (UX), 16:14:26 (mobile), 16:15:09 (сборка), 16:17:03 (финальный audit).
+Codex, семейство GPT-6 по данным среды, точный вариант неизвестен. Субагенты
+не использовались. Пользователь: «ok let's continue our next phase».
+HEAD на старте 33b3365; три удаления docs/prompts по-прежнему не коммитятся.
+
+На запрос GitHub/эссе пользователь ответил: «пока я не создал гитхаб и не начал
+эссе». Создан docs/submission.md с настоящим состоянием и двумя оставшимися
+действиями кандидата. Remote отсутствует, репозиторий не публиковался, личное
+эссе/обстоятельства не выдумывались. Техническая Phase 6 отделена от фактической
+отправки задания.
+
+Аудит выявил и исправил:
+- Worker сначала выбирал event_id самого раннего задания, затем мог пропустить
+  занятый Event и остановиться, хотя другая очередь готова. Теперь выбирает
+  незаблокированный Event с готовыми jobs через FOR UPDATE SKIP LOCKED, сохраняя
+  Event → Notification lock order. Regression-тест удерживает lock одного
+  мероприятия и проверяет доставку для другого.
+- Обычный /events при отказе PostgreSQL выдавал общий 500. Сетевые/операционные
+  отказы session dependency преобразуются в безопасный 503 с Retry-After: 3 и
+  no-store. Constraint/programming errors не маскируются. Readiness не изменён.
+- Добавлен тест late SMTP failure после истечения lease: успешный ack нового
+  владельца остаётся sent, запоздалый старый worker не переписывает результат.
+- Check-in после отмены билета мог оставить прошлый «действителен» на экране.
+  Ошибка admission очищает старый verify result; добавлены loading/error/retry
+  на странице проверки, скрыты устаревшие публичные формы/данные при ошибке query.
+- На 320px длинный title без пробелов переполнял check-in. Добавлен перенос
+  текста main и перенос pagination/footer; пять узких страниц прошли повторно.
+
+Backend verification:
+Два новых regression-теста сначала реально упали: worker вернул None при
+готовом втором событии, /events выбросил ConnectionRefusedError. После исправления
+notifications/health: 20 passed in 23.12s. Полная регрессия PostgreSQL:
+**79 passed in 57.25s**, включая все прежние concurrency/миграции/билеты/SSE/outbox.
+Ruff check passed; format --check: 50 files formatted. Отдельный root script
+также прошёл Ruff/format. uv lock --check --offline passed, 41 packages.
+
+Clean Compose verification:
+Добавлены опциональные API_PORT/FRONTEND_PORT/MAILPIT_HTTP_PORT/MAILPIT_SMTP_PORT
+с прежними default значениями. scripts/verify_clean_stack.py использует Python
+standard library, уникальный Compose project, приватный generated env, пять
+случайных loopback ports и пустой PostgreSQL volume. Основной стек не останавливает.
+Docker build cache разрешён; полностью пустой Docker daemon не заявляется.
+
+Попытка 1 обнаружила race готовности frontend: Compose --wait без frontend
+healthcheck возвращал управление до запуска Vite, первый запрос получил reset.
+Добавлен healthcheck API/БД через Vite proxy и ожидание готовности в verifier.
+Попытка 2 остановилась на ошибке отступов YAML при редактировании до создания
+контейнеров; YAML исправлен, compose config --quiet passed. Эти реальные failed
+reports сохранены отдельно. Cleanup failed в attempt-2 обусловлен тем же parse
+error; ресурсы этого project не создавались.
+
+Успешная попытка: reports/phase6-clean-stack.json, **79.78s**. Подтверждены:
+миграции пустой БД, отсутствие событий до seed, повторный seed без дублей,
+Alembic drift check, 20 одновременных signup → 5 confirmed / 15 waiting,
+два SSE клиента, retry, FIFO promotion, отзыв старого билета, single-use check-in,
+перенос и reminder в Mailpit. Остановка SMTP оставила pending с attempts, HTTP
+регистрация продолжала работать; после восстановления job стал sent. Остановка
+PostgreSQL дала 503 для /events и readiness; после старта/рестарта сохранились
+5 confirmed / 14 waiting / 1 checked_in и прежний ticket timestamp.
+В finally удалены только project containers/network/volume. Финальный docker
+inventory не нашёл eventflow-verify containers/volumes, основной стек здоров.
+
+Frontend/browser verification:
+**15 Node tests passed**, TypeScript/Vite build и oxlint passed. Фактический
+ORGANIZER_TOKEN не найден в frontend/dist; .env/venv/node_modules не отслеживаются.
+Существующий CDP helper выделен в frontend/scripts/browser.mjs и закрывает сами
+вкладки, чтобы не оставлять лишние SSE connections.
+
+Новый smoke_phase6_browser.mjs проверяет loading/empty/503/retry через перехват
+только API списка; ticket cancellation/check-in — настоящий API. Первоначальная
+маска URL перехватила также Vite /src/api/events.ts, runner не мог отрисовать
+loading; исправлено origin-ограничением. Это тестовая ошибка, не fake pass.
+Следующий прогон выявил реальное mobile overflow; после исправления сценарий
+успешен: 404, неверный organizer token, нет private link, native capacity=0,
+отозванный билет не сохраняет valid-label. На 320px проверены check-in, участники,
+editor, public event и private status с title из 198 символов без пробелов.
+Снимок /tmp/eventflow-phase6-mobile.png сохранён и визуально просмотрен.
+
+Полный flow Phase 5 повторён с новым helper: **passed**, регистрация видна во
+второй вкладке за **925ms**, waiting → promotion, ticket/verify/check-in,
+attendance, перенос, backend stop/start и SSE reconnect, mobile screenshot.
+Скрипт cleanup-browser удалил только события всех записанных попыток обоих
+сценариев под Event lock с проверкой UUID/названия; state-файлы удалены.
+Demo/user events не изменялись, тестовые синтетические письма остаются в Mailpit.
+
+README, requirements, architecture, decisions, testing, prompts и новый
+submission.md приведены к итоговому техническому состоянию. Не заявляются
+выполненными GitHub publication, личное эссе, production hosting, CI, email
+ownership/recovery или полный accessibility/cross-browser audit.
+Дальше кандидату: создать GitHub, проверить опубликованный clone и приложить
+своё эссе из 10 предложений. Код и документация фиксируются проверенными частями.
+
+После проверок созданы коммиты:
+- 4ba3122 — backend outage handling, outbox fairness и regression tests.
+- 635fc89 — UX/320px, CDP helper и браузерные проверки.
+- ab830f0 — isolated Compose verifier, frontend healthcheck и настоящие reports.
+Документация фиксируется отдельно; удаления docs/prompts остаются вне коммитов.

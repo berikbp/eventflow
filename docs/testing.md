@@ -255,3 +255,75 @@ PostgreSQL/backend перезапущены, worker запущен, verify на�
 cleanup-browser. Письма с синтетическими адресами оставлены в Mailpit как демо.
 Все пять Compose-сервисов работают, worker logs не содержат ошибок,
 финальный Alembic check прошёл.
+
+## Phase 6 — стабилизация (2026-10-25)
+
+Полный backend-прогон на настоящем PostgreSQL: **79 passed in 57.25s**.
+Добавлены regression cases на недопустимую остановку обработки из-за занятого
+Event, безопасный 503 обычного API при отказе БД и late ack после смены lease.
+Два первых теста до исправлений действительно падали; после исправления группа
+notifications/health показала 20 passed, затем прошла полная регрессия.
+Frontend: **15 passed**, TypeScript/Vite build и lint прошли.
+Ruff/format/uv lock прошли, runtime dependencies не добавлялись.
+
+### Полная проверка нового Compose-проекта
+
+```bash
+python3 scripts/verify_clean_stack.py --report /tmp/eventflow-clean-stack-report.json
+```
+
+Скрипт использует только Python standard library и Docker CLI, уникальный project,
+пять случайных loopback host ports, приватный env и пустой PostgreSQL volume.
+Главный локальный EventFlow не останавливается. Docker build cache допускается.
+В finally удаляется только временный проект/volume; отчёт не содержит секретов.
+
+[Успешный JSON-отчёт](../reports/phase6-clean-stack.json):
+- Миграции на пустой БД, отсутствие событий до seed, два idempotent seed, Alembic check.
+- 20 конкурентных HTTP регистраций → 5 confirmed, 15 waiting, уникальные ID.
+- Два SSE клиента, retry регистрации, FIFO promotion, отзыв и check-in только один раз.
+- Перенос и реальное reminder-письмо в Mailpit.
+- Остановка SMTP: HTTP регистрация работает, outbox остаётся pending с attempts;
+  после восстановления SMTP — sent.
+- Остановка PostgreSQL: /events и /health/ready дают 503; после старта/перезапуска
+  ticket.checked_in_at, confirmed/waiting/checked_in и миграции сохраняются.
+- Удаление только временного Compose-проекта, сети и volume.
+
+Предыдущие попытки сохранены отдельно: attempt-1 обнаружила гонку готовности
+frontend (Compose ещё не ждал Vite); добавлен healthcheck через API proxy.
+Attempt-2 остановилась на ошибке отступов YAML во время исправления, до создания
+контейнеров. После исправления compose config --quiet и полный сценарий прошли.
+Cleanup failed в attempt-2 означает невозможность разобрать YAML, а не потерю
+контроля над пользовательскими данными; ресурсы того project не создавались.
+
+### UX smoke и узкий экран
+
+После запуска отдельного Chrome с remote debugging, как в разделе Phase 5:
+
+```bash
+node frontend/scripts/smoke_phase6_browser.mjs
+cd backend
+PYTHONPATH=. uv run python scripts/smoke_phase5.py cleanup-browser --state /tmp/eventflow-phase6-browser-state.json
+```
+
+Новый script перехватывает **только ответы списка API** для проверки loading,
+empty, 503 и успешного retry. Отозванный билет/проверка/check-in используют настоящий
+API. Проверены 404, отсутствие личного ключа, неверный organizer token, native
+validation capacity=0. На 320px проверены check-in, список участников, editor,
+публичное мероприятие и личный статус, включая название длиной 198 символов без
+пробелов. При первом прогоне обнаружено переполнение title на check-in; исправлено
+наследуемым overflow-wrap. Проверки всех пяти страниц затем прошли.
+Снимок /tmp/eventflow-phase6-mobile.png просмотрен визуально.
+
+Маска interception в первой версии runner затрагивала Vite module
+/src/api/events.ts; уточнена до origin + /api/events*. Это ошибка тестового
+runner, не ложное прохождение loading check. Общий CDP helper теперь закрывает
+тестовые вкладки; не оставляет лишние SSE-соединения после сценария.
+Полный flow Phase 5 повторяется для регрессии helper/UX/reconnect.
+Проверено отсутствие фактического ORGANIZER_TOKEN в frontend/dist; .env и venv/
+node_modules отсутствуют среди отслеживаемых файлов.
+
+Финальный двухвкладочный flow также прошёл с общим CDP helper:
+регистрация видна организатору за **925ms**, promotion, check-in, attendance,
+перенос, настоящий backend shutdown/reconnect и мобильный билет.
+Cleanup-browser удалил только записанные события обоих сценариев и state-файлы.
+Текущий Compose здоров, временные eventflow-verify контейнеры/volumes отсутствуют.

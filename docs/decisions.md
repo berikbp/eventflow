@@ -134,3 +134,21 @@
 Просмотренные официальные источники:
 - https://www.postgresql.org/docs/18/sql-select.html (SKIP LOCKED и очереди)
 - https://www.starlette.io/requests/ (disconnect streaming requests)
+
+## Phase 6 — 2026-10-25, Asia/Qyzylorda
+
+35. Worker выбирает незаблокированный Event с готовыми Notification сразу через
+    FOR UPDATE SKIP LOCKED. Старый двухшаговый поиск мог выбрать занятое событие
+    и остановить текущую обработку, хотя другое событие было готово. Сохраняется
+    порядок Event → Notification, late ack защищён lease_token и отдельным тестом.
+36. Session dependency преобразует отказы соединения в HTTP 503 с Retry-After и
+    no-store. Не ловим все SQLAlchemyError: нарушения целостности и программные
+    ошибки не должны становиться «временной недоступностью». Фактический отказ БД
+    проверен в отдельном Compose-проекте.
+37. Host ports параметризованы; default порты сохраняются. Frontend получил
+    healthcheck через /api/health/ready. Это устраняет реальную гонку между
+    Compose --wait и стартом Vite, найденную на новой пустой БД.
+38. Проверка изолированного Compose — воспроизводимый Python script с уникальным
+    project name, свежим volume и случайными портами. Очистка ограничена этим
+    проектом. Build cache допускается, поэтому не называем её проверкой пустого
+    Docker daemon. Результаты/первые неуспешные попытки сохранены в reports.
