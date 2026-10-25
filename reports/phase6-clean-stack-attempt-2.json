@@ -1,0 +1,10 @@
+{
+  "started_at": "2026-10-25T11:07:39.074137+00:00",
+  "project": "eventflow-verify-e568a565dce7",
+  "scope": "fresh containers and PostgreSQL volume; Docker build cache allowed",
+  "status": "failed",
+  "error": "failed to parse /mnt/c/Users/user/Desktop/projects/eventflow/compose.yaml: go-yaml load error in parser (while parsing a block mapping) at L2.C3-L51.C5: did not find expected key\n",
+  "cleanup": "failed: inspect the reported verification project",
+  "finished_at": "2026-10-25T11:07:39.356613+00:00",
+  "duration_seconds": 0.28
+}

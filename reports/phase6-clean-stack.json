@@ -1,0 +1,20 @@
+{
+  "started_at": "2026-10-25T11:08:06.100100+00:00",
+  "project": "eventflow-verify-fd137bf7a2ee",
+  "scope": "fresh containers and PostgreSQL volume; Docker build cache allowed",
+  "status": "passed",
+  "empty_database_migrations_and_seed": "passed",
+  "concurrent_registration": {
+    "requests": 20,
+    "confirmed": 5,
+    "waiting": 15
+  },
+  "two_sse_clients": "passed",
+  "fifo_tickets_revocation_and_single_use_checkin": "passed",
+  "reschedule_and_real_mailpit_reminder": "passed",
+  "smtp_outage_retry": "passed",
+  "database_outage_and_restart_persistence": "passed",
+  "cleanup": "passed: only the unique verification project removed",
+  "finished_at": "2026-10-25T11:09:25.870567+00:00",
+  "duration_seconds": 79.78
+}

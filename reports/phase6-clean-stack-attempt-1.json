@@ -1,0 +1,10 @@
+{
+  "started_at": "2026-10-25T11:06:30.665978+00:00",
+  "project": "eventflow-verify-3f3087bf24c6",
+  "scope": "fresh containers and PostgreSQL volume; Docker build cache allowed",
+  "status": "failed",
+  "error": "[Errno 104] Connection reset by peer",
+  "cleanup": "passed: only the unique verification project removed",
+  "finished_at": "2026-10-25T11:07:11.896893+00:00",
+  "duration_seconds": 41.23
+}
