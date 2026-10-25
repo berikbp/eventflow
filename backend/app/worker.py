@@ -9,7 +9,7 @@ from datetime import UTC, datetime, timedelta
 from email.message import EmailMessage
 from uuid import UUID, uuid4
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from app.core.config import Settings
@@ -46,25 +46,26 @@ async def claim(sessions: async_sessionmaker, settings: Settings) -> Delivery | 
     now = datetime.now(UTC)
     async with sessions() as session:
         async with session.begin():
-            event_id = await session.scalar(
-                select(Notification.event_id)
-                .where(eligible(now))
-                .order_by(Notification.available_at, Notification.id)
-                .limit(1)
+            # Lock an available parent directly: a busy event must not block
+            # delivery for unrelated events. Keep Event -> Notification order.
+            next_due = (
+                select(func.min(Notification.available_at))
+                .where(Notification.event_id == Event.id, eligible(now))
+                .correlate(Event)
+                .scalar_subquery()
             )
-            if event_id is None:
-                return None
-            # Consistent lock order with API transactions; do not wait on busy events.
             event = await session.scalar(
                 select(Event)
-                .where(Event.id == event_id)
+                .where(next_due.is_not(None))
+                .order_by(next_due, Event.id)
                 .with_for_update(skip_locked=True)
+                .limit(1)
             )
             if event is None:
                 return None
             job = await session.scalar(
                 select(Notification)
-                .where(Notification.event_id == event_id, eligible(now))
+                .where(Notification.event_id == event.id, eligible(now))
                 .order_by(Notification.available_at, Notification.id)
                 .with_for_update(skip_locked=True)
                 .limit(1)
@@ -177,8 +178,10 @@ async def run(settings: Settings) -> None:
                 for _ in range(25):
                     if not await deliver_one(sessions, settings):
                         break
-            except Exception:
-                logger.error("Outbox iteration failed; retrying", exc_info=False)
+            except Exception as exc:
+                logger.error(
+                    "Outbox iteration failed (%s); retrying", type(exc).__name__
+                )
             await asyncio.sleep(settings.worker_interval)
     finally:
         await engine.dispose()

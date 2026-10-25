@@ -64,3 +64,13 @@ async def test_database_unavailable_returns_503_without_connection_details(
         application.state.engine = original
     assert response.status_code == 503
     assert response.json() == {"detail": "Database unavailable"}
+
+
+async def test_event_api_database_outage_is_retryable_without_private_details(client):
+    response = await client.get("/events")
+    assert response.status_code == 503
+    assert response.headers["retry-after"] == "3"
+    assert response.headers["cache-control"] == "no-store"
+    assert response.json() == {
+        "detail": "База данных временно недоступна. Повторите запрос."
+    }

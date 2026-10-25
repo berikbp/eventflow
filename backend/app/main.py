@@ -12,6 +12,7 @@ from app.api.realtime import router as realtime_router
 from app.api.registrations import router as registrations_router
 from app.api.tickets import router as tickets_router
 from app.core.config import Settings
+from app.db.session import DatabaseUnavailable
 from app.services.errors import Conflict, RegistrationNotFound, TicketNotFound
 from app.services.events import EventNotFound
 
@@ -39,6 +40,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(registrations_router)
     app.include_router(tickets_router)
     app.include_router(realtime_router)
+
+    @app.exception_handler(DatabaseUnavailable)
+    async def database_unavailable(
+        request: Request, exc: DatabaseUnavailable
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "База данных временно недоступна. Повторите запрос."},
+            headers={"Retry-After": "3", "Cache-Control": "no-store"},
+        )
 
     @app.exception_handler(TicketNotFound)
     async def ticket_not_found(request: Request, exc: TicketNotFound) -> JSONResponse:

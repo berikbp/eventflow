@@ -353,3 +353,52 @@ async def test_reschedule_later_postpones_due_reminder(client, database):
     new = next(j for j in reminders if j.schedule_version == 2)
     assert new.status == "pending"
     assert new.due_at > datetime.now(UTC) + timedelta(hours=71)
+
+
+async def test_locked_event_does_not_starve_other_events(client, database):
+    first = await event(client)
+    await register(client, first, "busy@example.com")
+    second = await event(client)
+    await register(client, second, "ready@example.com")
+    sessions = async_sessionmaker(database, expire_on_commit=False)
+    async with database.begin() as connection:
+        await connection.execute(
+            text("SELECT id FROM events WHERE id=:id FOR UPDATE"), {"id": first}
+        )
+        delivery = await asyncio.wait_for(claim(sessions, settings()), 5)
+        assert delivery is not None
+        assert delivery.message["To"] == "ready@example.com"
+
+
+async def test_expired_worker_cannot_overwrite_new_owner_ack(client, database):
+    eid = await event(client)
+    await register(client, eid)
+    sessions = async_sessionmaker(database, expire_on_commit=False)
+    sending, release = asyncio.Event(), asyncio.Event()
+
+    async def old_sender(message, config):
+        sending.set()
+        await release.wait()
+        raise OSError("Late failure from expired worker")
+
+    old = asyncio.create_task(deliver_one(sessions, settings(), old_sender))
+    try:
+        await asyncio.wait_for(sending.wait(), 5)
+        async with database.begin() as connection:
+            await connection.execute(
+                text(
+                    "UPDATE notifications SET lease_until=now()-interval '1 second' "
+                    "WHERE status='processing'"
+                )
+            )
+
+        async def replacement_sender(message, config):
+            return None
+
+        assert await deliver_one(sessions, settings(), replacement_sender)
+    finally:
+        release.set()
+        await old
+    confirmation = next(j for j in await jobs(database) if j.kind == "confirmation")
+    assert confirmation.status == "sent" and confirmation.attempts == 2
+    assert confirmation.last_error is None
