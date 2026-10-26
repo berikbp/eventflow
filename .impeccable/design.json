@@ -1,0 +1,430 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-26T06:38:31.957521+00:00",
+  "title": "Design System: EventFlow",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "photo-caption",
+        "value": "0 2px 12px #102b23",
+        "purpose": "Text readability over the hero photograph; not a surface shadow."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-transition",
+        "value": "0.18s",
+        "purpose": "Button colors and event-card border changes; disabled under reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "1600px"
+      },
+      {
+        "name": "compact-desktop",
+        "value": "1000px"
+      },
+      {
+        "name": "tablet",
+        "value": "760px"
+      },
+      {
+        "name": "participant-records",
+        "value": "600px"
+      },
+      {
+        "name": "mobile",
+        "value": "480px"
+      }
+    ],
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0162 173.1)",
+          "oklch(27% 0.0278 173.1)",
+          "oklch(39% 0.0394 173.1)",
+          "oklch(51% 0.0463 173.1)",
+          "oklch(63% 0.0463 173.1)",
+          "oklch(75% 0.0394 173.1)",
+          "oklch(87% 0.0255 173.1)",
+          "oklch(95% 0.0093 173.1)"
+        ]
+      },
+      "forest": {
+        "role": "primary",
+        "displayName": "Forest",
+        "tonalRamp": [
+          "oklch(15% 0.0182 173.4)",
+          "oklch(27% 0.0312 173.4)",
+          "oklch(39% 0.0442 173.4)",
+          "oklch(51% 0.0520 173.4)",
+          "oklch(63% 0.0520 173.4)",
+          "oklch(75% 0.0442 173.4)",
+          "oklch(87% 0.0286 173.4)",
+          "oklch(95% 0.0104 173.4)"
+        ]
+      },
+      "lime": {
+        "role": "primary",
+        "displayName": "Lime",
+        "tonalRamp": [
+          "oklch(15% 0.0420 122.7)",
+          "oklch(27% 0.0720 122.7)",
+          "oklch(39% 0.1020 122.7)",
+          "oklch(51% 0.1200 122.7)",
+          "oklch(63% 0.1200 122.7)",
+          "oklch(75% 0.1020 122.7)",
+          "oklch(87% 0.0660 122.7)",
+          "oklch(95% 0.0240 122.7)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "tonalRamp": [
+          "oklch(15% 0.0019 117.9)",
+          "oklch(27% 0.0032 117.9)",
+          "oklch(39% 0.0046 117.9)",
+          "oklch(51% 0.0054 117.9)",
+          "oklch(63% 0.0054 117.9)",
+          "oklch(75% 0.0046 117.9)",
+          "oklch(87% 0.0029 117.9)",
+          "oklch(95% 0.0011 117.9)"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.9)",
+          "oklch(27% 0.0000 89.9)",
+          "oklch(39% 0.0000 89.9)",
+          "oklch(51% 0.0000 89.9)",
+          "oklch(63% 0.0000 89.9)",
+          "oklch(75% 0.0000 89.9)",
+          "oklch(87% 0.0000 89.9)",
+          "oklch(95% 0.0000 89.9)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0081 159.1)",
+          "oklch(27% 0.0139 159.1)",
+          "oklch(39% 0.0197 159.1)",
+          "oklch(51% 0.0231 159.1)",
+          "oklch(63% 0.0231 159.1)",
+          "oklch(75% 0.0197 159.1)",
+          "oklch(87% 0.0127 159.1)",
+          "oklch(95% 0.0046 159.1)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15% 0.0048 134.9)",
+          "oklch(27% 0.0082 134.9)",
+          "oklch(39% 0.0116 134.9)",
+          "oklch(51% 0.0136 134.9)",
+          "oklch(63% 0.0136 134.9)",
+          "oklch(75% 0.0116 134.9)",
+          "oklch(87% 0.0075 134.9)",
+          "oklch(95% 0.0027 134.9)"
+        ]
+      },
+      "soft": {
+        "role": "neutral",
+        "displayName": "Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0039 123.5)",
+          "oklch(27% 0.0066 123.5)",
+          "oklch(39% 0.0094 123.5)",
+          "oklch(51% 0.0110 123.5)",
+          "oklch(63% 0.0110 123.5)",
+          "oklch(75% 0.0094 123.5)",
+          "oklch(87% 0.0061 123.5)",
+          "oklch(95% 0.0022 123.5)"
+        ]
+      },
+      "focus": {
+        "role": "semantic",
+        "displayName": "Focus",
+        "tonalRamp": [
+          "oklch(15% 0.0292 159.4)",
+          "oklch(27% 0.0500 159.4)",
+          "oklch(39% 0.0709 159.4)",
+          "oklch(51% 0.0834 159.4)",
+          "oklch(63% 0.0834 159.4)",
+          "oklch(75% 0.0709 159.4)",
+          "oklch(87% 0.0458 159.4)",
+          "oklch(95% 0.0167 159.4)"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Primary Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0223 167.7)",
+          "oklch(27% 0.0383 167.7)",
+          "oklch(39% 0.0543 167.7)",
+          "oklch(51% 0.0638 167.7)",
+          "oklch(63% 0.0638 167.7)",
+          "oklch(75% 0.0543 167.7)",
+          "oklch(87% 0.0351 167.7)",
+          "oklch(95% 0.0128 167.7)"
+        ]
+      },
+      "secondary": {
+        "role": "semantic",
+        "displayName": "Secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0044 126.4)",
+          "oklch(27% 0.0076 126.4)",
+          "oklch(39% 0.0108 126.4)",
+          "oklch(51% 0.0127 126.4)",
+          "oklch(63% 0.0127 126.4)",
+          "oklch(75% 0.0108 126.4)",
+          "oklch(87% 0.0070 126.4)",
+          "oklch(95% 0.0025 126.4)"
+        ]
+      },
+      "secondary-hover": {
+        "role": "semantic",
+        "displayName": "Secondary Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0085 127.6)",
+          "oklch(27% 0.0145 127.6)",
+          "oklch(39% 0.0206 127.6)",
+          "oklch(51% 0.0242 127.6)",
+          "oklch(63% 0.0242 127.6)",
+          "oklch(75% 0.0206 127.6)",
+          "oklch(87% 0.0133 127.6)",
+          "oklch(95% 0.0048 127.6)"
+        ]
+      },
+      "lime-hover": {
+        "role": "primary",
+        "displayName": "Lime Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0420 123.9)",
+          "oklch(27% 0.0720 123.9)",
+          "oklch(39% 0.1020 123.9)",
+          "oklch(51% 0.1200 123.9)",
+          "oklch(63% 0.1200 123.9)",
+          "oklch(75% 0.1020 123.9)",
+          "oklch(87% 0.0660 123.9)",
+          "oklch(95% 0.0240 123.9)"
+        ]
+      },
+      "error": {
+        "role": "semantic",
+        "displayName": "Error",
+        "tonalRamp": [
+          "oklch(15% 0.0420 29.1)",
+          "oklch(27% 0.0720 29.1)",
+          "oklch(39% 0.1020 29.1)",
+          "oklch(51% 0.1200 29.1)",
+          "oklch(63% 0.1200 29.1)",
+          "oklch(75% 0.1020 29.1)",
+          "oklch(87% 0.0660 29.1)",
+          "oklch(95% 0.0240 29.1)"
+        ]
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Success",
+        "tonalRamp": [
+          "oklch(15% 0.0352 154.4)",
+          "oklch(27% 0.0604 154.4)",
+          "oklch(39% 0.0855 154.4)",
+          "oklch(51% 0.1006 154.4)",
+          "oklch(63% 0.1006 154.4)",
+          "oklch(75% 0.0855 154.4)",
+          "oklch(87% 0.0553 154.4)",
+          "oklch(95% 0.0201 154.4)"
+        ]
+      },
+      "confirmed-bg": {
+        "role": "semantic",
+        "displayName": "Confirmed Bg",
+        "tonalRamp": [
+          "oklch(15% 0.0090 128.8)",
+          "oklch(27% 0.0154 128.8)",
+          "oklch(39% 0.0218 128.8)",
+          "oklch(51% 0.0257 128.8)",
+          "oklch(63% 0.0257 128.8)",
+          "oklch(75% 0.0218 128.8)",
+          "oklch(87% 0.0141 128.8)",
+          "oklch(95% 0.0051 128.8)"
+        ]
+      },
+      "confirmed-text": {
+        "role": "semantic",
+        "displayName": "Confirmed Text",
+        "tonalRamp": [
+          "oklch(15% 0.0304 150.8)",
+          "oklch(27% 0.0520 150.8)",
+          "oklch(39% 0.0737 150.8)",
+          "oklch(51% 0.0867 150.8)",
+          "oklch(63% 0.0867 150.8)",
+          "oklch(75% 0.0737 150.8)",
+          "oklch(87% 0.0477 150.8)",
+          "oklch(95% 0.0173 150.8)"
+        ]
+      },
+      "waiting-bg": {
+        "role": "semantic",
+        "displayName": "Waiting Bg",
+        "tonalRamp": [
+          "oklch(15% 0.0132 86.9)",
+          "oklch(27% 0.0226 86.9)",
+          "oklch(39% 0.0320 86.9)",
+          "oklch(51% 0.0377 86.9)",
+          "oklch(63% 0.0377 86.9)",
+          "oklch(75% 0.0320 86.9)",
+          "oklch(87% 0.0207 86.9)",
+          "oklch(95% 0.0075 86.9)"
+        ]
+      },
+      "waiting-text": {
+        "role": "semantic",
+        "displayName": "Waiting Text",
+        "tonalRamp": [
+          "oklch(15% 0.0335 73.1)",
+          "oklch(27% 0.0574 73.1)",
+          "oklch(39% 0.0813 73.1)",
+          "oklch(51% 0.0957 73.1)",
+          "oklch(63% 0.0957 73.1)",
+          "oklch(75% 0.0813 73.1)",
+          "oklch(87% 0.0526 73.1)",
+          "oklch(95% 0.0191 73.1)"
+        ]
+      },
+      "cancelled-bg": {
+        "role": "neutral",
+        "displayName": "Cancelled Bg",
+        "tonalRamp": [
+          "oklch(15% 0.0026 132.4)",
+          "oklch(27% 0.0044 132.4)",
+          "oklch(39% 0.0062 132.4)",
+          "oklch(51% 0.0074 132.4)",
+          "oklch(63% 0.0074 132.4)",
+          "oklch(75% 0.0062 132.4)",
+          "oklch(87% 0.0040 132.4)",
+          "oklch(95% 0.0015 132.4)"
+        ]
+      }
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Shared primary action.",
+      "html": "<button class=\"ds-button-primary\">Зарегистрироваться</button>",
+      "css": ".ds-button-primary{font-family:Onest,sans-serif;font-size:.875rem;font-weight:550;line-height:1.25;border:1px solid transparent;border-radius:8px;padding:13px 21px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color .18s,color .18s,border-color .18s;background:var(--forest);color:var(--white);border-color:transparent;} .ds-button-primary:hover{background:#235745;} .ds-button-primary:focus-visible{outline:3px solid var(--focus);outline-offset:4px;} .ds-button-primary:disabled{opacity:.5;cursor:not-allowed;} @media(prefers-reduced-motion:reduce){.ds-button-primary{transition:none;}}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Shared secondary action.",
+      "html": "<button class=\"ds-button-secondary\">Назад</button>",
+      "css": ".ds-button-secondary{font-family:Onest,sans-serif;font-size:.875rem;font-weight:550;line-height:1.25;border:1px solid transparent;border-radius:8px;padding:13px 21px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color .18s,color .18s,border-color .18s;background:#edf1e8;color:var(--forest);border-color:#dfe5d9;} .ds-button-secondary:hover{background:#e1e9d8;} .ds-button-secondary:focus-visible{outline:3px solid var(--focus);outline-offset:4px;} .ds-button-secondary:disabled{opacity:.5;cursor:not-allowed;} @media(prefers-reduced-motion:reduce){.ds-button-secondary{transition:none;}}"
+    },
+    {
+      "name": "Lime Button",
+      "kind": "button",
+      "refersTo": "button-lime",
+      "description": "Shared lime action.",
+      "html": "<button class=\"ds-button-lime\">Создать мероприятие</button>",
+      "css": ".ds-button-lime{font-family:Onest,sans-serif;font-size:.875rem;font-weight:550;line-height:1.25;border:1px solid transparent;border-radius:8px;padding:13px 21px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color .18s,color .18s,border-color .18s;background:var(--lime);color:var(--forest);border-color:transparent;} .ds-button-lime:hover{background:#c5eb72;} .ds-button-lime:focus-visible{outline:3px solid var(--focus);outline-offset:4px;} .ds-button-lime:disabled{opacity:.5;cursor:not-allowed;} @media(prefers-reduced-motion:reduce){.ds-button-lime{transition:none;}}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Shared ghost action.",
+      "html": "<button class=\"ds-button-ghost\">Организатору</button>",
+      "css": ".ds-button-ghost{font-family:Onest,sans-serif;font-size:.875rem;font-weight:550;line-height:1.25;border:1px solid transparent;border-radius:8px;padding:13px 21px;min-height:48px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color .18s,color .18s,border-color .18s;background:transparent;color:var(--forest);border-color:var(--line);} .ds-button-ghost:hover{background:#235745;} .ds-button-ghost:focus-visible{outline:3px solid var(--focus);outline-offset:4px;} .ds-button-ghost:disabled{opacity:.5;cursor:not-allowed;} @media(prefers-reduced-motion:reduce){.ds-button-ghost{transition:none;}}"
+    },
+    {
+      "name": "Email Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labeled email field used for registration.",
+      "html": "<label class=\"ds-label\">Email<input class=\"ds-input\" type=\"email\" placeholder=\"you@example.com\"></label>",
+      "css": ".ds-label{display:flex;flex-direction:column;gap:9px;font-family:Onest,sans-serif;font-size:.8125rem;font-weight:550;color:var(--ink);} .ds-input{font:400 .875rem Onest,sans-serif;width:100%;box-sizing:border-box;border:1px solid #cbd7c4;border-radius:8px;background:var(--white);color:var(--ink);padding:13px 14px;min-height:48px;} .ds-input:focus{outline:2px solid var(--focus);outline-offset:2px;} .ds-input::placeholder{color:#667660;opacity:1;}"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "status-confirmed",
+      "description": "Explicit registration state with supporting semantic color.",
+      "html": "<span class=\"ds-pill\">Подтверждено</span>",
+      "css": ".ds-pill{display:inline-block;font-family:Onest,sans-serif;font-size:.6875rem;font-weight:550;line-height:1.3;background:#e8f1df;color:#285f38;padding:6px 10px;border-radius:100px;white-space:nowrap;}"
+    },
+    {
+      "name": "Event Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Flat bordered event surface with linked title.",
+      "html": "<article class=\"ds-card\"><h3><a href=\"#event\">Название мероприятия</a></h3><p>Описание мероприятия</p></article>",
+      "css": ".ds-card{font-family:Onest,sans-serif;color:var(--ink);background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:22px;transition:border-color .18s;} .ds-card:hover{border-color:#8aab80;} .ds-card h3{font-size:1.35rem;font-weight:600;line-height:1.35;letter-spacing:-.015em;margin:0 0 12px;} .ds-card a{color:inherit;text-decoration:none;} .ds-card a:hover{text-decoration:underline;} .ds-card a:focus-visible{outline:3px solid var(--focus);outline-offset:4px;} .ds-card p{font-size:.875rem;line-height:1.7;color:var(--muted);} @media(prefers-reduced-motion:reduce){.ds-card{transition:none;}}"
+    },
+    {
+      "name": "Public Navigation",
+      "kind": "nav",
+      "description": "Compact desktop public navigation.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Главная навигация\"><a class=\"ds-active\" href=\"#catalog\">Афиша</a><a href=\"#how\">Как это работает</a></nav>",
+      "css": ".ds-nav{display:flex;gap:32px;align-items:center;font:500 .875rem Onest,sans-serif;} .ds-nav a{padding:12px 0;color:var(--muted);text-decoration:none;} .ds-nav a.ds-active,.ds-nav a:hover{color:var(--forest);} .ds-nav a:focus-visible{outline:3px solid var(--focus);outline-offset:4px;}"
+    },
+    {
+      "name": "Date Block",
+      "kind": "custom",
+      "description": "Recurring localized day/month signature.",
+      "html": "<span class=\"ds-date\" aria-label=\"12 ноября\"><strong>12</strong><span>нояб</span></span>",
+      "css": ".ds-date{font-family:Onest,sans-serif;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:62px;min-height:68px;padding:8px 12px;background:#eef3e6;color:var(--forest);border-radius:9px;line-height:1.2;font-variant-numeric:tabular-nums;} .ds-date strong{font-size:1.65rem;letter-spacing:-.035em;font-weight:650;} .ds-date>span{font-size:.6875rem;letter-spacing:.015em;font-weight:500;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Forest-and-lime event marketplace",
+    "overview": "EventFlow uses the confirmed forest-and-lime event marketplace direction: warm near-white pages, deep green text, restrained borders and community imagery. Russian interface copy and compact organizer tools keep discovery approachable and operational screens readable.\n\nThe recurring date block connects event listings, detail pages and tickets. Local photographs illustrate the two seeded events; other events receive a typographic poster. Short state transitions support interaction without entrance choreography.",
+    "keyCharacteristics": [
+      "Forest ink and lime emphasis on warm paper.",
+      "Onest throughout, with compact labels and balanced headings.",
+      "Image-led discovery and a recurring day/month date block.",
+      "Flat bordered surfaces and explicit status labels."
+    ],
+    "rules": [
+      {
+        "name": "The Date Continuity Rule",
+        "body": "Carry the same day/month block from discovery to detail to ticket; derive its content from the event date.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Surface Rule",
+        "body": "Separate working surfaces with pale fills and fine borders; reserve text shadow for the photograph caption.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use the shared forest, paper and lime palette and Onest type family.",
+      "Do preserve visible focus indicators and reduced-motion behavior.",
+      "Do label participant values on small screens and allow long emails and ticket codes to wrap.",
+      "Do keep event imagery illustrative and status values grounded in actual event data."
+    ],
+    "donts": [
+      "Don't present illustrative photographs as evidence of a particular event.",
+      "Don't introduce account, payment, venue or rating cues unsupported by the product.",
+      "Don't replace explicit ticket and queue labels with color alone."
+    ]
+  }
+}

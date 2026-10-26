@@ -327,3 +327,28 @@ node_modules отсутствуют среди отслеживаемых фай
 перенос, настоящий backend shutdown/reconnect и мобильный билет.
 Cleanup-browser удалил только записанные события обоих сценариев и state-файлы.
 Текущий Compose здоров, временные eventflow-verify контейнеры/volumes отсутствуют.
+
+## UI redesign — 26 October 2026
+
+Real PostgreSQL backend suite: **81 passed (39.96s)**; event API subset:
+**8 passed (4.65s)**. Added real search/date filtering, escaping, pagination and
+invalid-period coverage. Frontend: **16 passed**, TypeScript/Vite build and oxlint
+passed; Ruff check and format passed (50 files).
+
+`node frontend/scripts/smoke_redesign_browser.mjs` passed: real search, empty/reset,
+date filtering, FAQ, email registration, ticket, organizer access, widths
+1440/1280/390/320. Phase 5 two-client flow passed again: update visible in 978ms,
+waiting/promotion/check-in/reschedule and backend restart/SSE reconnect.
+
+Headless Chromium screenshots were visually reviewed for home, event, ticket,
+organizer and error states. Impeccable finish reviewer scored mobile participant
+records, authenticated header wrapping and seed corroboration resolved (ship).
+This is a scoped review, not a complete accessibility/cross-browser certification.
+Local captures are ignored because temporary tickets contain private credentials.
+
+Phase 6 browser regression also passed after adapting the runner to initialize
+320px emulation before navigating: loading, empty, 503/retry, 404, invalid token,
+capacity validation, revoked check-in and five long-title layouts. Chromium resize
+attempts reported root width336 while all content bounds/body remained320; fresh
+mobile navigation passed strict document scrollWidth checks. This runner behavior
+is recorded separately from the fixed search/header/table layout issues.

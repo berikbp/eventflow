@@ -557,3 +557,44 @@ ownership/recovery или полный accessibility/cross-browser audit.
 - 635fc89 — UX/320px, CDP helper и браузерные проверки.
 - ab830f0 — isolated Compose verifier, frontend healthcheck и настоящие reports.
 Документация фиксируется отдельно; удаления docs/prompts остаются вне коммитов.
+
+## 2026-10-26 — Interface redesign
+
+Date/time recorded during work: 2026-10-26T11:37:11+05:00 (Asia/Qyzylorda).
+Codex (GPT-6 family in environment); user-requested Impeccable installed and used.
+Skill-directed finish reviewer and documenter worked in separate agent contexts.
+
+Replaced technical foundation presentation with an event discovery flow: real
+search and date filters, illustrative covers, clear event details and registration,
+private ticket and management link, organizer navigation and mobile records.
+Preserved email-only registration; optional questions about accounts/language had
+no answer, so existing approved Russian/no-account behavior remains. No invented
+prices, locations or attendance numbers. Auth and transaction guarantees unchanged.
+
+Backend 81 tests passed, frontend 16 passed; build/lint/Ruff passed. Real browser
+redesign smoke passed, two-client Phase 5 regression passed (978ms). Reviewer found
+mobile table readability and authenticated 320px header overflow; both fixed and
+rechecked, final scored disposition ship. Detector run once returned []; raster
+provenance scan: 2 files, 0 missing. DESIGN.md and design.json document actual CSS.
+
+Phase 6 runner required updates for SVG-backed navigation, specific ticket input,
+and summary clicks. Loading text is visually hidden, so loading assertion uses
+textContent. Stronger viewport overflow checks identified narrow search grid sizing
+and hidden heading positioning; corrected rather than weakening assertions.
+
+User asked about lost code. Verified worker includes ticket code in confirmation
+mail. Clarified Mailpit is local, personal management URL is saved separately and
+email recovery is not implemented. Ticket page copy now states those limits.
+Deliberate docs/prompts deletions remain outside commits by user's instruction.
+
+Final Phase 6 browser regression passed with pages initialized at320px before
+navigation. Earlier resize attempts showed a stale mobile root width336 while body
+and content bounds stayed320; fresh mobile navigation passed the strict check.
+Search sizing, hidden text containment and skip-link width are bounded explicitly.
+No assertion was changed to accept a wider scroll area. Frontend16/build/lint and
+Ruff50 are clean after final changes. Self-hosted assets need no visitor CDN calls.
+
+Scoped cleanup removed recorded browser smoke events only; demo/user events kept.
+Commits: 0ab6aca (backend filters), 313aaa5 (UI/assets/browser checks).
+The upstream font OFL is preserved verbatim, including its line21 trailing space;
+Git whitespace check reports that vendor text, with no application whitespace errors.

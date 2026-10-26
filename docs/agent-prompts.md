@@ -53,3 +53,14 @@
     ответил: «пока я не создал гитхаб и не начал эссе». GitHub и эссе оставлены
     шагами кандидата, без вымышленной ссылки/личной истории и без публикации кода.
     Codex (семейство GPT-6 по данным среды), без субагентов.
+
+11. 2026-10-26: пользователь попросил «download this skill
+    https://github.com/pbakaus/impeccable», затем:
+    «create a normal UI https://allevents.in/ or like https://ticketon.kz/en[Image #1]
+    or like this UI , create a normal UI with normal UX, it is very stupid and
+    unpleasent design … and how people can attend without registration».
+    Ссылка и изображение использованы как направление, без копирования чужого UI.
+    Дополнение: «если я потеряю код который мне выдали что я должен сделать?
+    или она отправляется в email? или происходит что то другое».
+    Codex, семейство GPT-6; Impeccable установлен локально. По инструкции навыка
+    использованы отдельные finish reviewer и documenter; это не полный экспорт.
