@@ -16,7 +16,9 @@ const organizerToken = env.match(/^ORGANIZER_TOKEN=(.*)$/m)[1].trim().replace(/^
 const auth = { Authorization: `Bearer ${organizerToken}`, 'Content-Type': 'application/json' }
 const tabs = []
 async function tab(path) {
-  const page = await connectTab(path)
+  const page = await connectTab('/system')
+  await page.send('Emulation.setDeviceMetricsOverride', {width:320,height:850,deviceScaleFactor:1,mobile:true})
+  await page.navigate(path)
   tabs.push(page)
   return page
 }
@@ -26,10 +28,8 @@ async function authorize(page) {
 }
 async function narrow(page) {
   await page.send('Page.bringToFront')
-  await page.send('Emulation.setDeviceMetricsOverride', {
-    width: 320, height: 850, deviceScaleFactor: 1, mobile: true,
-  })
-  await page.wait('document.documentElement.scrollWidth <= window.innerWidth')
+  await page.evaluate('document.activeElement?.blur(); document.documentElement.style.scrollBehavior="auto"; scrollTo(0,0)')
+  await page.wait('document.documentElement.scrollWidth <= document.documentElement.clientWidth')
 }
 const title = 'Phase 6 ' + 'x'.repeat(190)
 let event
@@ -54,8 +54,9 @@ try {
     }
   })
   await list.send('Fetch.enable', { patterns: [{ urlPattern: origin + '/api/events*' }] })
+  await list.send('Emulation.setDeviceMetricsOverride', {width:320,height:850,deviceScaleFactor:1,mobile:true})
   await list.navigate('/')
-  await list.text('Загружаем данные…')
+  await list.wait("document.body?.textContent.includes('Загружаем данные…')")
   holding = false
   await Promise.all(paused.map(fulfill))
   await list.text('Мероприятий пока нет')
@@ -107,7 +108,7 @@ try {
   await check.click('Продолжить')
   await check.text('Неверный токен организатора')
   await authorize(check)
-  await check.fill('input[placeholder]', ticket.code)
+  await check.fill('.checkin-layout input[placeholder]', ticket.code)
   await check.click('Проверить билет')
   await check.text('Билет действителен')
   const cancel = await fetch(origin + `/api/registrations/${record.id}/cancel`, {
@@ -118,7 +119,7 @@ try {
   await check.text('Билет отозван или регистрация не подтверждена')
   assert.equal(await check.evaluate("document.body.innerText.includes('Билет действителен')"), false)
   await narrow(check)
-  await check.click('← Участники и статистика')
+  await check.click('Участники и статистика')
   await check.text('Регистрации: 1')
   await narrow(check)
   await check.click('Редактировать мероприятие')

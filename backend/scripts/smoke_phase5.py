@@ -45,6 +45,7 @@ async def main():
                         "Phase 5 updated live",
                         "Phase 5 reconnected",
                         "Phase 6 " + "x" * 190,
+                        "EventFlow UI review — тест",
                     }
                     await connection.execute(
                         text("DELETE FROM registrations WHERE event_id=:id"),

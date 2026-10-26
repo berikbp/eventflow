@@ -21,3 +21,6 @@ htmlcov/
 .idea/
 .vscode/
 .DS_Store
+
+# Local design review captures (may contain temporary ticket details)
+.impeccable/review/

@@ -51,11 +51,11 @@ try {
   await participant.wait("!!document.querySelector('.ticket-code')")
   const code=(await participant.evaluate("document.querySelector('.ticket-code').textContent")).replaceAll(' ','')
   await organizer.click('Проверка билетов и check-in')
-  await organizer.fill('input[placeholder]',code); await organizer.click('Проверить билет'); await organizer.text('Билет действителен')
+  await organizer.fill('.checkin-layout input[placeholder]',code); await organizer.click('Проверить билет'); await organizer.text('Билет действителен')
   await organizer.click('Подтвердить вход'); await organizer.text('Check-in выполнен.')
   await participant.text('Вход отмечен:',5000)
   await organizer.click('Проверить билет'); await organizer.text('Вход уже зарегистрирован')
-  await organizer.click('← Участники и статистика')
+  await organizer.click('Участники и статистика')
   await organizer.wait("[...document.querySelectorAll('dt')].find(x=>x.textContent==='Прошли check-in')?.nextElementSibling.textContent==='1'")
   // Rescheduling updates the other tab's event details without navigation/reload.
   await participant.navigate(`/events/${event.id}`); await participant.text('Phase 5 browser smoke')

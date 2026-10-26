@@ -54,12 +54,12 @@ export class Tab {
   }
 
   text(text, timeout) {
-    return this.wait(`document.body.innerText.includes(${JSON.stringify(text)})`, timeout)
+    return this.wait(`document.body?.innerText.includes(${JSON.stringify(text)})`, timeout)
   }
 
   click(text) {
     return this.evaluate(`(() => {
-      const button = [...document.querySelectorAll('button,a')]
+      const button = [...document.querySelectorAll('button,a,summary')]
         .find(node => node.textContent.trim() === ${JSON.stringify(text)})
       if (!button) throw new Error('Button missing')
       button.click()
