@@ -133,3 +133,73 @@ async def test_demo_seed_is_idempotent(database):
         await seed_events(session)
         await seed_events(session)
         assert await session.scalar(text("SELECT count(*) FROM events")) == 2
+
+
+async def test_search_filters_results_and_total_with_literal_wildcards(client):
+    for title, description in [
+        ("Community Python", "Meet friends"),
+        ("PostgreSQL workshop", "Learn PYTHON SQL"),
+        ("100% useful", "literal_percent"),
+    ]:
+        response = await client.post(
+            "/events",
+            json=payload()
+            | {
+                "title": title,
+                "description": description,
+            },
+            headers=AUTH,
+        )
+        assert response.status_code == 201
+    found = (await client.get("/events", params={"q": "python", "limit": 1})).json()
+    assert found["total"] == 2 and len(found["items"]) == 1
+    second = (
+        await client.get("/events", params={"q": "PYTHON", "limit": 1, "offset": 1})
+    ).json()
+    assert second["total"] == 2
+    assert found["items"][0]["id"] != second["items"][0]["id"]
+    literal = (await client.get("/events", params={"q": "%"})).json()
+    assert literal["total"] == 1 and literal["items"][0]["title"] == "100% useful"
+    assert (await client.get("/events", params={"q": "unmatched"})).json()["total"] == 0
+
+
+async def test_date_filters_are_timezone_aware_and_half_open(client):
+    base = datetime.now(UTC) + timedelta(days=2)
+    for days in [0, 2, 4]:
+        assert (
+            await client.post(
+                "/events",
+                headers=AUTH,
+                json=payload()
+                | {
+                    "title": str(days),
+                    "starts_at": (base + timedelta(days=days)).isoformat(),
+                },
+            )
+        ).status_code == 201
+    page = (
+        await client.get(
+            "/events",
+            params={
+                "starts_after": base.isoformat(),
+                "starts_before": (base + timedelta(days=4)).isoformat(),
+            },
+        )
+    ).json()
+    assert page["total"] == 2 and [item["title"] for item in page["items"]] == [
+        "0",
+        "2",
+    ]
+    assert (
+        await client.get("/events", params={"starts_after": "2099-01-01T12:00:00"})
+    ).status_code == 422
+    assert (await client.get("/events", params={"q": "x" * 201})).status_code == 422
+    assert (
+        await client.get(
+            "/events",
+            params={
+                "starts_after": (base + timedelta(days=5)).isoformat(),
+                "starts_before": base.isoformat(),
+            },
+        )
+    ).status_code == 422

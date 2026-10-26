@@ -1,7 +1,8 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from pydantic import AwareDatetime
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import require_organizer
@@ -19,8 +20,20 @@ async def list_events(
     session: Session,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
+    q: Annotated[str, Query(max_length=200)] = "",
+    starts_after: AwareDatetime | None = None,
+    starts_before: AwareDatetime | None = None,
 ):
-    return await events.list_events(session, limit, offset)
+    if starts_after and starts_before and starts_after >= starts_before:
+        raise HTTPException(422, "Конец периода должен быть позже начала")
+    return await events.list_events(
+        session,
+        limit,
+        offset,
+        q=q.strip(),
+        starts_after=starts_after,
+        starts_before=starts_before,
+    )
 
 
 @router.get("/{event_id}", response_model=EventRead)

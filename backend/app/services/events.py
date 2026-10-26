@@ -1,6 +1,7 @@
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.event import Event
@@ -13,10 +14,36 @@ class EventNotFound(Exception):
     pass
 
 
-async def list_events(session: AsyncSession, limit: int, offset: int):
-    total = await session.scalar(select(func.count()).select_from(Event))
+async def list_events(
+    session: AsyncSession,
+    limit: int,
+    offset: int,
+    *,
+    q: str = "",
+    starts_after: datetime | None = None,
+    starts_before: datetime | None = None,
+):
+    filters = []
+    if q:
+        filters.append(
+            or_(
+                func.lower(Event.title).contains(q.lower(), autoescape=True),
+                func.lower(Event.description).contains(q.lower(), autoescape=True),
+            )
+        )
+    if starts_after:
+        filters.append(Event.starts_at >= starts_after)
+    if starts_before:
+        filters.append(Event.starts_at < starts_before)
+    total = await session.scalar(
+        select(func.count()).select_from(Event).where(*filters)
+    )
     items = await session.scalars(
-        select(Event).order_by(Event.starts_at, Event.id).limit(limit).offset(offset)
+        select(Event)
+        .where(*filters)
+        .order_by(Event.starts_at, Event.id)
+        .limit(limit)
+        .offset(offset)
     )
     return {"items": items.all(), "total": total, "limit": limit, "offset": offset}
 
