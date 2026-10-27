@@ -125,5 +125,22 @@ Prepare создаёт собственные записи с pending-задан
 - 25 октября2026: изолированный Compose успешно проверен с пустым volume;
   [машинный отчёт](../reports/phase6-clean-stack.json).
 
-Это локальные результаты, не подтверждение GitHub CI. Полный cross-browser
+Это локальные результаты. Статус автоматических проверок доступен в
+[GitHub Actions](https://github.com/berikbp/eventflow/actions/workflows/ci.yml). Полный cross-browser
 и accessibility audit не выполнялся.
+
+## Continuous integration
+
+Workflow [.github/workflows/ci.yml](../.github/workflows/ci.yml) запускается на
+push/pull_request, а также через workflow_dispatch. Две независимые job:
+
+- Backend: Ubuntu24.04, Python3.12, uv0.12.5 (как в Dockerfile), PostgreSQL17;
+  uv lock --check, uv sync --locked, Ruff/check format, pytest -ra.
+- Frontend: Ubuntu24.04, Node.js24; npm ci, lint, tests, build.
+
+TEST_DATABASE_URL задан явно, поэтому PostgreSQL integration tests не пропускаются
+из-за отсутствия URL. База одноразовая и доступна только в рамках job; пароль
+тестовый, GitHub Secrets не нужны. Action dependencies закреплены полными SHA,
+permissions — contents:read, checkout не сохраняет credentials. Лимиты выполнения:
+15 минут backend,10 минут frontend. Новый запуск на той же ветке отменяет старый.
+В CI пока не включены browser smoke и полная Compose/restart-проверка.

@@ -1,5 +1,7 @@
 # EventFlow
 
+[![CI](https://github.com/berikbp/eventflow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/berikbp/eventflow/actions/workflows/ci.yml)
+
 Регистрация на мероприятия с ограниченным количеством мест, автоматической
 очередью ожидания и билетами.
 
@@ -153,7 +155,13 @@ frontend/src/         Страницы, компоненты и API-клиент
 Последний полный backend-прогон **26 октября 2026: 81 passed** на PostgreSQL.
 Frontend: **16 passed**, TypeScript/Vite build и lint прошли. Проверены браузерные
 сценарии двух вкладок, reconnect, ошибки и мобильная вёрстка.
-Это результаты локальных запусков, не статус GitHub CI.
+Это результаты локальных запусков. Текущий статус CI показан в значке выше.
+
+[GitHub Actions](https://github.com/berikbp/eventflow/actions/workflows/ci.yml)
+запускается при push, pull request и вручную. Backend job проверяет lockfile, Ruff,
+форматирование и pytest с PostgreSQL17. Frontend job выполняет npm ci, lint,
+тесты и production build на Node.js24. Workflow: [.github/workflows/ci.yml](.github/workflows/ci.yml).
+CI не заменяет браузерные сценарии и отдельную Compose-проверку.
 
 Backend из каталога `backend`, при работающем Compose db и стандартных настройках:
 
@@ -202,9 +210,9 @@ python3 scripts/verify_clean_stack.py --report /tmp/eventflow-clean-stack-report
   меньше 24 часов, отправляется сразу. Старые версии пропускаются при захвате задания;
   письмо, уже передаваемое SMTP, отозвать нельзя.
 - SSE проверяет версии в БД раз в секунду на клиента; это решение для небольшой нагрузки.
-- CI пока не настроен; полный аудит доступности и всех браузеров не выполнялся.
+- Полный аудит доступности и всех браузеров не выполнялся.
 
-Следующие приоритеты: CI с PostgreSQL, подтверждение email и восстановление доступа,
+Следующие приоритеты: подтверждение email и восстановление доступа,
 production-развёртывание и мониторинг outbox.
 
 ## Документация
