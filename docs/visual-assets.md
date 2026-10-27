@@ -16,7 +16,7 @@ Onest variable font, weights 100–900:
 - workshop.jpg: https://images.unsplash.com/photo-1517048676732-d65bc937f952
 
 Provider: Unsplash. Both sources were downloaded and visually inspected. Their
-source URLs and illustrative purpose are embedded in JPEG comments using Impeccable.
+source URLs and illustrative purpose are embedded in JPEG comments in the image files.
 These are generic community/workshop illustrations, not documentary photos of the
 seed events. Demo covers visibly say «Иллюстрация встречи». User-created events
 use a typographic fallback instead of being assigned a misleading stock photograph.

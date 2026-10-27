@@ -1,7 +1,7 @@
 # EventFlow — локальная разработка и техническая справка
 
 Подробные настройки, API и правила обработки состояний. Краткое описание и
-основной путь запуска — в [README](../README.md). История этапов — в журнале.
+основной путь запуска — в [README](../README.md).
 
 ## Быстрый запуск (PowerShell, из корня)
 
@@ -133,8 +133,7 @@ npm run lint
 - frontend/src: список, детали, формы организатора и страница статуса системы.
 - compose.yaml: db, backend, frontend, Mailpit и outbox-worker.
 - [Требования](requirements.md), [архитектура](architecture.md),
-  [решения](decisions.md), [проверки](testing.md),
-  [журнал](development-log.md), [промпты](agent-prompts.md).
+  [решения](decisions.md), [проверки](testing.md).
 
 Dockerfile frontend собирает приложение для проверки, а запускает Vite dev server:
 это локальная среда, не production deployment. Mailpit принимает письма от отдельного worker. Backend контейнер применяет миграции
@@ -142,8 +141,7 @@ Dockerfile frontend собирает приложение для проверк�
 
 Использован генератор create-vite 9.3.0, шаблон react-ts. Backend основан на
 существующей uv-заготовке пользователя; зависимости управляются только uv.
-Техническая подготовка завершена; оставшиеся действия кандидата — в docs/submission.md.
-Дедлайн задания: 2 ноября 2026.
+
 
 ## API мероприятий
 

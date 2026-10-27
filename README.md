@@ -1,7 +1,7 @@
 # EventFlow
 
 Регистрация на мероприятия с ограниченным количеством мест, автоматической
-очередью ожидания и билетами. Тестовое задание MadDevs №9 — Junior Agentic Developer.
+очередью ожидания и билетами.
 
 ## Проблема
 
@@ -207,17 +207,10 @@ python3 scripts/verify_clean_stack.py --report /tmp/eventflow-clean-stack-report
 Следующие приоритеты: CI с PostgreSQL, подтверждение email и восстановление доступа,
 production-развёртывание и мониторинг outbox.
 
-## Разработка с AI и материалы сдачи
-
-Разработка велась с Codex. Требования, решения, реальные промпты, проверки
-и временные метки сохранены в документации и истории Git.
-При редизайне использован Impeccable с отдельными reviewer и documenter.
+## Документация
 
 - [Требования и checklist](docs/requirements.md)
-- [Журнал разработки](docs/development-log.md) и [промпты](docs/agent-prompts.md)
-- [Инструменты AI, происхождение кода и пакет сдачи](docs/submission.md)
+- [Архитектура](docs/architecture.md) и [технические решения](docs/decisions.md)
+- [Локальная разработка и API](docs/local-development.md)
+- [Проверки](docs/testing.md)
 - [Дизайн-система](DESIGN.md) и [источники изображений и шрифта](docs/visual-assets.md)
-
-Frontend начат с create-vite (react-ts), backend — с uv-заготовки.
-Сторонние зависимости зафиксированы в `uv.lock` и `package-lock.json`.
-GitHub-репозиторий и личное эссе кандидата пока не приложены.

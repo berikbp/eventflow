@@ -23,4 +23,4 @@ htmlcov/
 .DS_Store
 
 # Local design review captures (may contain temporary ticket details)
-.impeccable/review/
+.impeccable
