@@ -598,3 +598,37 @@ Scoped cleanup removed recorded browser smoke events only; demo/user events kept
 Commits: 0ab6aca (backend filters), 313aaa5 (UI/assets/browser checks).
 The upstream font OFL is preserved verbatim, including its line21 trailing space;
 Git whitespace check reports that vendor text, with no application whitespace errors.
+
+## 2026-10-27 — README для сдачи и скриншоты
+
+Временная метка: 2026-10-27T14:44:12+05:00, Asia/Qyzylorda.
+Инструмент: Codex (семейство GPT-6 по среде), без новых субагентов.
+Пользователь попросил исследовать рекомендации по README, самостоятельно снять
+скриншоты и показать для проверки; CI предложен как возможный следующий шаг.
+
+Прочитаны GitHub Docs «About the repository README file» и Make a README.
+Порядок выбран под проверяющего: проблема → решение → интерфейс → запуск →
+ручной сценарий → архитектура → проверки → ограничения → AI-процесс.
+Подробные старые команды/API сохранены в docs/local-development.md; ссылки
+скорректированы. В submission.md исправлено устаревшее утверждение об отсутствии
+субагентов: указаны фактические reviewer/documenter при редизайне.
+
+Headless Chromium/CDP снял четыре новых PNG из работающего приложения:
+афиша1440×1250, мобильная390×844, dashboard1440×1050, билет1100×1100.
+Все снимки визуально просмотрены. Для организатора и билета создано отдельное
+событие на2 места и3 вымышленных email @example.com:2 confirmed/1 waiting.
+Код билета заменён в DOM на «ДЕМО · НЕ ДЛЯ ВХОДА», личная ссылка скрыта;
+исходный код приложения не изменялся. После съёмки удалены только созданные
+регистрации и событие по сохранённому UUID с проверкой названия под Event lock.
+Пользовательские данные сохранены. Синтетические письма могут оставаться в Mailpit.
+
+Проверены локальные ссылки README, local-development и submission: все существуют;
+PNG заголовки/размеры, git diff --check: успешно. Бизнес-код не изменён, полный
+backend/frontend suite повторно не запускался; результаты26 октября подписаны
+своей датой. CI workflow не добавлялся и успешный GitHub run не заявляется.
+Исследованные источники:
+- https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes
+- https://www.makeareadme.com/
+
+Имеющиеся пользовательские изменения .gitignore и удаления docs/prompts оставлены
+вне коммита этой задачи. Личный essay и GitHub публикация остаются кандидату.
