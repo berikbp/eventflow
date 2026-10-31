@@ -1,6 +1,6 @@
 # Решения
 
-Дата проектирования: 2026-10-19, Asia/Qyzylorda (UTC+05:00).
+Дата проектирования: 2026-10-19, Asia/Almaty (UTC+05:00).
 Статус будущих решений — предложено, реализация проверяется по этапам.
 
 1. FastAPI + Pydantic: заданный стек, типизированные API и OpenAPI.
@@ -26,7 +26,7 @@
 12. Миграции вместе с моделями в Phase 2: в Foundation таблиц нет, пустая
     миграция не нужна. Alembic уже в зависимостях.
 
-## Phase 2 — 2026-10-20, Asia/Qyzylorda
+## Phase 2 — 2026-10-20, Asia/Almaty
 
 13. Вместо локального аккаунта выбран один серверный bearer token организатора:
     минимальный доступ для задания без таблиц пользователей/ролей. Случайный
@@ -55,7 +55,7 @@
 - https://alembic.sqlalchemy.org/en/latest/cookbook.html#using-asyncio-with-alembic
 - https://docs.pydantic.dev/latest/api/standard_library_types/#datetimes
 
-## Phase 3 — 2026-10-22, Asia/Qyzylorda
+## Phase 3 — 2026-10-22, Asia/Almaty
 
 19. Registration получает статус confirmed/waiting/cancelled вместо отдельной
     WaitingList. Монотонный номер на Event задаёт FIFO без неоднозначных timestamp.
@@ -90,7 +90,7 @@
 - https://vite.dev/guide/
 - https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html
 
-## Phase 4 — 2026-10-24, Asia/Qyzylorda
+## Phase 4 — 2026-10-24, Asia/Almaty
 
 26. Ticket хранит случайный 128-bit код, UNIQUE(code), частичный UNIQUE для
     активного билета регистрации, checked_in_at и revoked_at. Код отделён от
@@ -106,7 +106,7 @@
     изменяемого счётчика. Verify читает snapshot и не резервирует право входа:
     check-in повторно проверяет действительность под блокировкой.
 
-## Phase 5 — 2026-10-24, Asia/Qyzylorda
+## Phase 5 — 2026-10-24, Asia/Almaty
 
 30. PostgreSQL Notification outbox, отдельный процесс app.worker из того же
     образа backend. Уникальные логические ключи, retry/backoff и lease заменяют
@@ -135,7 +135,7 @@
 - https://www.postgresql.org/docs/18/sql-select.html (SKIP LOCKED и очереди)
 - https://www.starlette.io/requests/ (disconnect streaming requests)
 
-## Phase 6 — 2026-10-25, Asia/Qyzylorda
+## Phase 6 — 2026-10-25, Asia/Almaty
 
 35. Worker выбирает незаблокированный Event с готовыми Notification сразу через
     FOR UPDATE SKIP LOCKED. Старый двухшаговый поиск мог выбрать занятое событие
